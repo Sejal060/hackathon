@@ -3,24 +3,17 @@ Configuration module for HackaAIverse - AI Agent-Based Hackathon System
 """
 
 import os
-import streamlit as st
+from dotenv import load_dotenv
 from typing import Dict, List
-if "GROQ_API_KEY" in st.secrets:
-    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-else:
-    import os
-    from dotenv import load_dotenv
-    load_dotenv()
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
-
-
-
+# Load environment variables
+load_dotenv()
 
 class Config:
     """Configuration class for the hackathon system"""
     
-    
+    # Groq API Configuration
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL = os.getenv("GROQ_MODEL", "llama3-8b-8192")
     
     # Firebase Configuration
