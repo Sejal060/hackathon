@@ -19,21 +19,22 @@ from ai_agents import AgentFactory
 data_manager = DataManager()
 config_validation = Config.validate_config()
 
-# Initialize Firebase
-db = None
+# Initialize Firebase if available (for backward compatibility)
+firebase_db = None
 try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
+    if Config.FIREBASE_KEY:
+        import firebase_admin
+        from firebase_admin import credentials, firestore
 
-    if not firebase_admin._apps:
-       cred = credentials.Certificate(json.loads(st.secrets["FIREBASE_KEY"]))
-       firebase_admin.initialize_app(cred)
-
-    db = firestore.client()
-
+        if not firebase_admin._apps:
+            import json
+            key_dict = json.loads(Config.FIREBASE_KEY)
+            cred = credentials.Certificate(key_dict)
+            firebase_admin.initialize_app(cred)
+        firebase_db = firestore.client()
 except Exception as e:
-    st.warning(f"⚠️ Firebase initialization failed: {e}")
-
+    print(f"Firebase initialization failed: {e}")
+    firebase_db = None
 
 # Initialize AI Agents
 @st.cache_resource
@@ -118,9 +119,8 @@ def home_page():
                     if tech_stack:
                         st.write(f"**Suggested Tech:** {', '.join(tech_stack)}")
 
-
 def team_registration():
-    """Team registration form connected to Firebase"""
+    """Enhanced team registration with validation"""
     st.header("👥 Team Registration")
 
     with st.form("register_team"):
@@ -133,37 +133,27 @@ def team_registration():
 
         for i in range(member_count):
             member_name = st.text_input(f"Member {i+1} Name*")
-            members.append(member_name)
+            if member_name:
+                members.append(member_name)
 
         st.subheader("Contact Information")
         email = st.text_input("Team Email*", help="Primary contact email")
         college = st.text_input("College/University*")
         contact_number = st.text_input("Contact Number")
 
-        submitted = st.form_submit_button("Register Team")
-
-        if submitted:
-            if not team_name or not all(members) or not email or not college:
-                st.error("❌ Please fill in all required fields marked with *")
-            elif db is None:
-                st.error("❌ Firebase is not initialized. Please check your configuration.")
+        if st.form_submit_button("Register Team"):
+            if not team_name or not members or not email or not college:
+                st.error("Please fill in all required fields marked with *")
             else:
                 try:
-                    doc_ref = db.collection("registrations").document()
-                    doc_ref.set({
-                            "team_name": team_name,
-                            "members": members,
-                            "email": email,
-                            "college": college,
-                            "contact_number": contact_number
-})
-                    st.success("✅ Team Registered Successfully and Saved to Firebase!")
-
-        
-                except Exception as e:
-                    st.error(f"❌ Error saving to Firebase: {e}")
-
-                
+                    team_id = data_manager.register_team(
+                        team_name=team_name,
+                        members=members,
+                        email=email,
+                        college=college,
+                        contact_number=contact_number
+                    )
+                    st.success(f"✅ Team '{team_name}' registered successfully! Team ID: {team_id}")
 
                     # Send welcome message using ReminderBot
                     agents = initialize_agents()
@@ -656,38 +646,6 @@ def admin_panel():
         for key, status in config_validation.items():
             status_icon = "✅" if status else "❌"
             st.write(f"{status_icon} {key.replace('_', ' ').title()}")
-
-    with st.form("register_form"):
-       st.subheader("Team Information")
-    team_name = st.text_input("Team Name*")
-    num_members = st.selectbox("Number of Members", [1, 2, 3])
-
-    st.subheader("Team Members")
-    member1 = st.text_input("Member 1 Name*")
-    member2 = st.text_input("Member 2 Name*", disabled=(num_members < 2))
-    member3 = st.text_input("Member 3 Name*", disabled=(num_members < 3))
-
-    st.subheader("Contact Information")
-    email = st.text_input("Team Email*")
-    college = st.text_input("College/University*")
-    contact = st.text_input("Contact Number*")
-
-    submit = st.form_submit_button("Register")
-
-    if submit:
-     data = {
-        "team_name": team_name,
-        "num_members": num_members,
-        "member1": member1,
-        "member2": member2 if num_members >= 2 else "",
-        "member3": member3 if num_members == 3 else "",
-        "email": email,
-        "college": college,
-        "contact": contact
-    }
-    
-     db.collection("registrations").add(data)
-     st.success("✅ Registration submitted successfully!")
 
 # Main Application
 def main():
