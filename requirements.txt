@@ -8,4 +8,5 @@ pandas
 plotly
 requests
 email-validator
-
+pandas
+numpy
