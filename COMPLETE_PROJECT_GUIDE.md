@@ -1,4 +1,4 @@
-# 🚀 HackaAIverse 2024 - Complete Project Guide
+# 🚀 HackaAIverse 2025 - Complete Project Guide
 
 ## ⚡ QUICK START (New Developer)
 
@@ -133,6 +133,38 @@ start.bat
 - **Features**: Theme-based problems, difficulty scaling
 
 ---
+🆕 Adaptive Feedback Agent 🎯
+Purpose
+
+The Adaptive Feedback Agent provides personalized, real-time feedback to hackathon participants. It helps students understand their progress and improve projects based on AI-driven recommendations.
+
+Features
+
+📊 Performance Tracking – Monitors project submissions and team progress.
+
+🧠 Contextual Feedback – Suggests improvements on code quality, creativity, and tech stack.
+
+🔄 Adaptive Learning – Adjusts guidance based on team performance and previous interactions.
+
+🎯 Scoring Hints – Gives hints on how teams can maximize their judging score.
+
+📈 Motivation Engine – Encourages teams with adaptive messages during key phases of the hackathon.
+
+Access
+
+Available as a dedicated Streamlit page (Adaptive Feedback)
+
+Integrated into team dashboards for real-time feedback
+
+Works seamlessly with JudgingBot for combined evaluation
+
+Example Usage
+
+Submit a project draft → Get instant adaptive suggestions
+
+Ask: “How can we improve our project’s impact score?” → Receive targeted improvement strategies
+
+View dashboard to see progress heatmaps and next-step recommendations
 
 ## 📊 DEMO DATA (Pre-loaded)
 
@@ -159,22 +191,28 @@ start.bat
 ### **File Structure**
 ```
 HTask/
-├── project.py              # Main Streamlit application
-├── config.py               # Configuration management
-├── data_manager.py         # Data operations (JSON-based)
-├── ai_agents.py            # Groq AI agent implementations
-├── initialize_demo_data.py # Demo data setup script
-├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (Groq API key)
-├── start.bat               # One-click startup script
-├── data/                   # JSON data storage
-│   ├── problems.json       # Problem statements
-│   ├── teams.json          # Team registrations
-│   ├── projects.json       # Project submissions
-│   ├── scores.json         # Judge scores
-│   └── outreach.json       # Outreach contacts
-└── COMPLETE_PROJECT_GUIDE.md # This document
-```
+├── project.py                  # Main Streamlit application
+├── config.py                   # Configuration management
+├── data_manager.py             # Data operations (JSON-based)
+├── ai_agents.py                # Groq AI agent implementations
+├── adaptive_agent/             # Adaptive Feedback Agent module
+│   ├── __init__.py             # Makes folder a Python package
+│   ├── feedback_agent.py       # Core logic for adaptive feedback
+│   └── utils.py                # Helper functions for analysis & tracking
+├── adaptive_feedback.py        # Streamlit page for Adaptive Feedback Agent
+├── initialize_demo_data.py     # Demo data setup script
+├── requirements.txt            # Python dependencies
+├── .env                        # Environment variables (Groq API key)
+├── start.bat                   # One-click startup script
+├── data/                       # JSON data storage
+│   ├── problems.json           # Problem statements
+│   ├── teams.json              # Team registrations
+│   ├── projects.json           # Project submissions
+│   ├── scores.json             # Judge scores
+│   ├── outreach.json           # Outreach contacts
+│   └── feedback.json           # Adaptive feedback records
+└── COMPLETE_PROJECT_GUIDE.md   # This document
+
 
 ---
 
@@ -254,7 +292,7 @@ pip install -r requirements.txt --force-reinstall
 
 ## 📈 HACKATHON EVENT DESIGN
 
-### **Event: HackaAIverse 2024**
+### **Event: HackaAIverse 2025**
 - **Theme**: AI for Real Life
 - **Duration**: 1 Day (9 AM - 7 PM)
 - **Target**: 5+ teams from multiple colleges
@@ -367,7 +405,7 @@ pip install -r requirements.txt --force-reinstall
 
 ---
 
-**🎉 HackaAIverse 2024 is fully operational and ready for use!**
+**🎉 HackaAIverse 2025 is fully operational and ready for use!**
 
 **Start Command: `streamlit run project.py`**  
 **Access URL: `http://localhost:8501`**  
