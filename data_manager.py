@@ -334,3 +334,25 @@ class DataManager:
             "outreach_responses": outreach_responses,
             "last_updated": datetime.now().isoformat()
         }
+import json
+import os
+
+WEIGHT_FILE = "weights.json"
+
+def load_weights():
+    if os.path.exists(WEIGHT_FILE):
+        with open(WEIGHT_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_weights(weights):
+    with open(WEIGHT_FILE, "w") as f:
+        json.dump(weights, f)
+
+def update_weight(suggestion_id, reward, alpha=0.1):
+    weights = load_weights()
+    old = weights.get(suggestion_id, 0.0)
+    new = max(-1.0, min(1.0, old + alpha * reward))  # Clamp between -1 and 1
+    weights[suggestion_id] = new
+    save_weights(weights)
+    return new
