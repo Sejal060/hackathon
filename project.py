@@ -49,7 +49,7 @@ def initialize_agents():
 
 # Page configuration
 st.set_page_config(
-    page_title="HackaAIverse 2024",
+    page_title="HackaAIverse 2025",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -686,3 +686,45 @@ def main():
 
 if __name__ == "__main__":
     main()
+    import streamlit as st
+from data_manager import update_weight, load_weights
+import matplotlib.pyplot as plt
+
+# Title of the app
+st.title("🧠 Adaptive Suggestion Engine")
+
+# Input from user
+task_input = st.text_input("Enter your recent activity or goal:")
+
+# Example suggestion logic (you can replace this with dynamic suggestions)
+if task_input:
+    suggestion_id = f"suggestion_{task_input.lower().replace(' ', '_')}"
+    suggestion_text = f"💡 Suggestion: Learn Python basics to improve your task '{task_input}'"
+    
+    st.write(suggestion_text)
+
+    # Feedback buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("👍 Accept", key=f"accept_{suggestion_id}"):
+            update_weight(suggestion_id, reward=1)
+            st.success("Thanks for your feedback!")
+
+    with col2:
+        if st.button("👎 Reject", key=f"reject_{suggestion_id}"):
+            update_weight(suggestion_id, reward=-1)
+            st.info("Feedback noted.")
+
+# Visualization of suggestion performance
+st.subheader("📊 Suggestion Performance")
+
+weights = load_weights()
+if weights:
+    fig, ax = plt.subplots()
+    ax.bar(weights.keys(), weights.values(), color='skyblue')
+    ax.set_ylabel("Weight")
+    ax.set_title("Suggestion Feedback Over Time")
+    plt.xticks(rotation=45, ha='right')
+    st.pyplot(fig)
+else:
+    st.write("No feedback yet. Try accepting or rejecting a suggestion above.")
