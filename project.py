@@ -19,22 +19,26 @@ from ai_agents import AgentFactory
 data_manager = DataManager()
 config_validation = Config.validate_config()
 
-# Initialize Firebase if available (for backward compatibility)
+# Initialize Firebase only if explicitly configured
 firebase_db = None
-try:
-    if Config.FIREBASE_KEY:
-        import firebase_admin
-        from firebase_admin import credentials, firestore
+if str(getattr(Config, "DATABASE_TYPE", "json")).lower() == "firebase":
+    try:
+        # Only attempt init if FIREBASE_KEY looks like a JSON object
+        if Config.FIREBASE_KEY and Config.FIREBASE_KEY.strip().startswith("{"):
+            import firebase_admin
+            from firebase_admin import credentials, firestore
 
-        if not firebase_admin._apps:
-            import json
-            key_dict = json.loads(Config.FIREBASE_KEY)
-            cred = credentials.Certificate(key_dict)
-            firebase_admin.initialize_app(cred)
-        firebase_db = firestore.client()
-except Exception as e:
-    print(f"Firebase initialization failed: {e}")
-    firebase_db = None
+            if not getattr(firebase_admin, "_apps", []):
+                import json
+                key_dict = json.loads(Config.FIREBASE_KEY)
+                cred = credentials.Certificate(key_dict)
+                firebase_admin.initialize_app(cred)
+            firebase_db = firestore.client()
+        else:
+            firebase_db = None
+    except Exception:
+        # Quietly fallback to None (JSON storage is default)
+        firebase_db = None
 
 # Initialize AI Agents
 @st.cache_resource
@@ -504,7 +508,7 @@ def leaderboard():
         if not scores_df.empty:
             fig = px.bar(scores_df, x="Team", y="Score", title="Team Scores")
             fig.update_layout(xaxis_tickangle=45)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         # Statistics
         stats = data_manager.get_statistics()
@@ -686,45 +690,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    import streamlit as st
-from data_manager import update_weight, load_weights
-import matplotlib.pyplot as plt
-
-# Title of the app
-st.title("🧠 Adaptive Suggestion Engine")
-
-# Input from user
-task_input = st.text_input("Enter your recent activity or goal:")
-
-# Example suggestion logic (you can replace this with dynamic suggestions)
-if task_input:
-    suggestion_id = f"suggestion_{task_input.lower().replace(' ', '_')}"
-    suggestion_text = f"💡 Suggestion: Learn Python basics to improve your task '{task_input}'"
     
-    st.write(suggestion_text)
-
-    # Feedback buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("👍 Accept", key=f"accept_{suggestion_id}"):
-            update_weight(suggestion_id, reward=1)
-            st.success("Thanks for your feedback!")
-
-    with col2:
-        if st.button("👎 Reject", key=f"reject_{suggestion_id}"):
-            update_weight(suggestion_id, reward=-1)
-            st.info("Feedback noted.")
-
-# Visualization of suggestion performance
-st.subheader("📊 Suggestion Performance")
-
-weights = load_weights()
-if weights:
-    fig, ax = plt.subplots()
-    ax.bar(weights.keys(), weights.values(), color='skyblue')
-    ax.set_ylabel("Weight")
-    ax.set_title("Suggestion Feedback Over Time")
-    plt.xticks(rotation=45, ha='right')
-    st.pyplot(fig)
-else:
-    st.write("No feedback yet. Try accepting or rejecting a suggestion above.")
