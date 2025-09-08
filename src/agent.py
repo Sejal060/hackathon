@@ -1,19 +1,20 @@
 # src/agent.py
-from openai import OpenAI
+from groq import Groq
 from typing import Dict
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 class BasicAgent:
     def __init__(self, api_key: str):
-        self.client = OpenAI(api_key=api_key)
+        self.client = Groq(api_key=api_key)
 
     def process_input(self, user_input: str) -> Dict[str, str]:
         logger.info(f"Step 1: Received input - {user_input}")
         try:
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
                 messages=[{"role": "user", "content": user_input}]
             )
             output = response.choices[0].message.content
