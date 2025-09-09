@@ -178,5 +178,20 @@
     "total_score": 37,
     "comments": "Solid career guidance system. Good data analysis, presentation could be more polished.",
     "submitted_at": "2025-07-31T13:59:38.161917"
+  },
+  {
+    "id": "6ef56116",
+    "team_name": "GreenThumbAI",
+    "judge_name": "Judge",
+    "scores": {
+      "usefulness": 5,
+      "creativity": 5,
+      "teamwork": 5,
+      "tech_stack": 5,
+      "clarity": 5
+    },
+    "total_score": 25,
+    "comments": "",
+    "submitted_at": "2025-09-09T13:16:03.523870"
   }
 ]

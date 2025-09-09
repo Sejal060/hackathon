@@ -81,5 +81,19 @@
     "contact_number": "8889996655",
     "registered_at": "2025-07-31T14:09:12.156930",
     "status": "registered"
+  },
+  {
+    "id": "f7c3e4df",
+    "team_name": "GreenThumbAI",
+    "members": [
+      "Sejal Dongre",
+      "Prajakta Gaikwad",
+      "Apeksha Pansare"
+    ],
+    "email": "greenthumbai@gmail.com",
+    "college": "mumbai ",
+    "contact_number": "8010360195",
+    "registered_at": "2025-09-09T13:09:13.183891",
+    "status": "registered"
   }
 ]

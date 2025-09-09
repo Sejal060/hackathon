@@ -93,5 +93,20 @@
     "problem_id": "prob_003",
     "submitted_at": "2025-07-31T14:10:41.799998",
     "status": "submitted"
+  },
+  {
+    "id": "4f675a2c",
+    "team_name": "GreenThumbAI",
+    "project_title": "LeafLens AI Hackathon Demo",
+    "description": "LeafLens is an AI-powered plant identification system that allows users to upload an image, type a plant name, or scan a leaf to identify the plant. It provides detailed information about the plant, including shape, color, texture, and veins. The system also includes AI agents:\n\nMentorBot: Answers user questions about the app.\n\nReminderBot: Sends reminders for project submissions.\n\nJudgingBot: Automatically scores submitted projects.",
+    "github_link": "https://github.com/Sejal060/hackathon.git",
+    "demo_link": "https://hackathonfinal-tvl5dbevrqugtnvcpfgrrc.streamlit.app/",
+    "tech_stack": [
+      "Python",
+      "Node.js"
+    ],
+    "problem_id": "prob_004",
+    "submitted_at": "2025-09-09T13:11:50.637036",
+    "status": "submitted"
   }
 ]
