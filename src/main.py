@@ -1,5 +1,6 @@
 # src/main.py
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Body
+from pydantic import BaseModel
 import logging
 import os
 from dotenv import load_dotenv
@@ -16,6 +17,10 @@ load_dotenv()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+# Define request models
+class AgentInput(BaseModel):
+    user_input: str
 
 # Initialize FastAPI
 app = FastAPI(title="Sejal's AI Agent System")
@@ -46,6 +51,27 @@ def run_agent(input: str = Query(..., description="Input text for the agent")):
     
     # Step 1: Process input
     processed = input_handler.process_input(input)
+    
+    # Step 2: Plan action
+    action = reasoning.plan(processed)
+    
+    # Step 3: Execute action
+    result = executor.execute(action)
+    
+    # Step 4: Calculate reward
+    reward = reward_system.calculate_reward(result)
+    
+    return {"processed_input": processed, "action": action, "result": result, "reward": reward}
+
+@app.post("/agent")
+async def run_agent_post(input_data: AgentInput):
+    logger.info(f"/agent POST called with input: {input_data}")
+    
+    # Extract input from request body
+    input_text = input_data.user_input
+    
+    # Step 1: Process input
+    processed = input_handler.process_input(input_text)
     
     # Step 2: Plan action
     action = reasoning.plan(processed)
