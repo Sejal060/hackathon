@@ -10,7 +10,6 @@ from src.reasoning import ReasoningModule
 from src.executor import Executor
 from src.reward import RewardSystem
 
-
 # Load environment variables
 load_dotenv()
 
@@ -23,10 +22,7 @@ app = FastAPI(title="Sejal's AI Agent System")
 
 # Initialize modular agents
 input_handler = InputHandler()
-from src.reasoning import ReasoningModule
-
 reasoning = ReasoningModule()
-
 executor = Executor()
 reward_system = RewardSystem()
 
@@ -36,7 +32,7 @@ def root():
     return {
         "message": "FastAPI is running 🚀",
         "endpoints": ["/ping", "/agent", "/multi-agent", "/docs", "/redoc"],
-        "docs": "http://127.0.0.1:8001/docs"
+        "docs": f"http://0.0.0.0:{os.getenv('PORT', 8001)}/docs"  # Dynamic port for Render
     }
 
 @app.get("/ping")
@@ -76,5 +72,4 @@ def run_multi(task: str = Query(..., description="Task for planner and executor"
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8001)
-
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8001)))  # Compatible with Render
