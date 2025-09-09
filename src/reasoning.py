@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ReasoningModule:
-    def plan_action(self, processed_input: str) -> str:
+    def plan(self, processed_input: str) -> str:
         """
         Simple reasoning logic:
         - If input mentions 'mentor', return 'mentor_action'
