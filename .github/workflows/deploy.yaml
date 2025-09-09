@@ -1,0 +1,22 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Optional sanity check: fail early if the secret isn't set
+      - name: Verify required secrets
+        run: |
+          test -n "${{ secrets.RENDER_WEBHOOK }}" || (echo "Missing RENDER_WEBHOOK secret" && exit 1)
+
+      # Trigger a deploy on Render via Deploy Hook
+      - name: Trigger Render Deploy
+        run: |
+          curl -sSf -X POST -d '' "${{ secrets.RENDER_WEBHOOK }}"
