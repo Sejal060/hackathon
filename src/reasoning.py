@@ -1,12 +1,17 @@
 # src/reasoning.py
-class Reasoning:
-    def plan(self, processed_input: str) -> str:
-        # Simple planner logic (expand as needed)
-        if "mentor" in processed_input:
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ReasoningModule:
+    def plan_action(self, processed_input: str) -> str:
+        """
+        Simple reasoning logic:
+        - If input mentions 'mentor', return 'mentor_action'
+        - Otherwise, return 'default_action'
+        """
+        logger.info(f"Planning action for: {processed_input}")
+        if "mentor" in processed_input.lower():
             return "mentor_action"
-        elif "reminder" in processed_input:
-            return "reminder_action"
-        elif "judge" in processed_input:
-            return "judging_action"
-        else:
-            return "default_action"
+        return "default_action"
+

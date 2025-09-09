@@ -5,10 +5,11 @@ import os
 from dotenv import load_dotenv
 
 # Import new modular agent modules
-from input_handler import InputHandler
-from reasoning import Reasoning
-from executor import Executor
-from reward import RewardSystem
+from src.input_handler import InputHandler
+from src.reasoning import ReasoningModule
+from src.executor import Executor
+from src.reward import RewardSystem
+
 
 # Load environment variables
 load_dotenv()
@@ -22,7 +23,10 @@ app = FastAPI(title="Sejal's AI Agent System")
 
 # Initialize modular agents
 input_handler = InputHandler()
-reasoning = Reasoning()
+from src.reasoning import ReasoningModule
+
+reasoning = ReasoningModule()
+
 executor = Executor()
 reward_system = RewardSystem()
 
