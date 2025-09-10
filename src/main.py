@@ -4,6 +4,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 # Import new modular agent modules
 from src.input_handler import InputHandler
@@ -28,7 +29,7 @@ app = FastAPI(title="Sejal's AI Agent System")
 # Enable CORS (important for Swagger + frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # For security, replace "*" with your Streamlit URL later
+    allow_origins=["*"],   # For security, replace "*" with your frontend URL later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,21 +41,34 @@ reasoning = ReasoningModule()
 executor = Executor()
 reward_system = RewardSystem()
 
+
 @app.get("/")
 def root():
     logger.info("Root endpoint called")
     return {
         "message": "FastAPI is running 🚀",
-        "endpoints": ["/ping", "/agent", "/multi-agent", "/docs", "/redoc"],
-        "docs": "/docs"  # simplified, works both locally and on Render
+        "endpoints": ["/ping", "/agent", "/agents", "/multi-agent", "/multiagents", "/docs", "/redoc"],
+        "docs": "/docs"
     }
 
 @app.get("/ping")
 def ping():
     logger.info("Ping endpoint called")
-    return {"status": "ok"}   # simpler response
+    return {"status": "ok"}
+
+
+def safe_reward(value):
+    """Convert reward (or any numeric) to native Python type for JSON serialization."""
+    try:
+        if hasattr(value, "tolist"):  # For numpy arrays
+            return value.tolist()
+        return int(value)  # For numpy scalars like numpy.int64
+    except Exception:
+        return str(value)  # fallback in case of unexpected type
+
 
 @app.get("/agent")
+@app.get("/agents")
 def run_agent(input: str = Query(..., description="Input text for the agent")):
     logger.info(f"/agent called with input: {input}")
     
@@ -63,21 +77,20 @@ def run_agent(input: str = Query(..., description="Input text for the agent")):
     result = executor.execute(action)
     reward = reward_system.calculate_reward(result)
     
-    return {"processed_input": processed, "action": action, "result": result, "reward": reward}
+    reward = safe_reward(reward)  # convert reward to Python type
+    
+    return {
+        "processed_input": processed,
+        "action": action,
+        "result": result,
+        "reward": reward
+    }
 
-@app.post("/agent")
-async def run_agent_post(input_data: AgentInput):
-    logger.info(f"/agent POST called with input: {input_data}")
-    
-    input_text = input_data.user_input
-    processed = input_handler.process_input(input_text)
-    action = reasoning.plan(processed)
-    result = executor.execute(action)
-    reward = reward_system.calculate_reward(result)
-    
-    return {"processed_input": processed, "action": action, "result": result, "reward": reward}
+
+
 
 @app.get("/multi-agent")
+@app.get("/multiagents")
 def run_multi(task: str = Query(..., description="Task for planner and executor")):
     logger.info(f"/multi-agent called with task: {task}")
     
@@ -86,7 +99,15 @@ def run_multi(task: str = Query(..., description="Task for planner and executor"
     result = executor.execute(plan)
     reward = reward_system.calculate_reward(result)
     
-    return {"processed_task": processed, "plan": plan, "result": result, "reward": reward}
+    reward = safe_reward(reward)
+    
+    return {
+        "processed_task": processed,
+        "plan": plan,
+        "result": result,
+        "reward": reward
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
