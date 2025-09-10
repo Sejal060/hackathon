@@ -1,9 +1,9 @@
-# src/main.py
-from fastapi import FastAPI, Query, Body
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 import logging
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # Import new modular agent modules
 from src.input_handler import InputHandler
@@ -25,6 +25,15 @@ class AgentInput(BaseModel):
 # Initialize FastAPI
 app = FastAPI(title="Sejal's AI Agent System")
 
+# Enable CORS (important for Swagger + frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # For security, replace "*" with your Streamlit URL later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Initialize modular agents
 input_handler = InputHandler()
 reasoning = ReasoningModule()
@@ -37,28 +46,21 @@ def root():
     return {
         "message": "FastAPI is running 🚀",
         "endpoints": ["/ping", "/agent", "/multi-agent", "/docs", "/redoc"],
-        "docs": f"http://0.0.0.0:{os.getenv('PORT', 8001)}/docs"  # Dynamic port for Render
+        "docs": "/docs"  # simplified, works both locally and on Render
     }
 
 @app.get("/ping")
 def ping():
     logger.info("Ping endpoint called")
-    return {"message": "pong"}
+    return {"status": "ok"}   # simpler response
 
 @app.get("/agent")
 def run_agent(input: str = Query(..., description="Input text for the agent")):
     logger.info(f"/agent called with input: {input}")
     
-    # Step 1: Process input
     processed = input_handler.process_input(input)
-    
-    # Step 2: Plan action
     action = reasoning.plan(processed)
-    
-    # Step 3: Execute action
     result = executor.execute(action)
-    
-    # Step 4: Calculate reward
     reward = reward_system.calculate_reward(result)
     
     return {"processed_input": processed, "action": action, "result": result, "reward": reward}
@@ -67,19 +69,10 @@ def run_agent(input: str = Query(..., description="Input text for the agent")):
 async def run_agent_post(input_data: AgentInput):
     logger.info(f"/agent POST called with input: {input_data}")
     
-    # Extract input from request body
     input_text = input_data.user_input
-    
-    # Step 1: Process input
     processed = input_handler.process_input(input_text)
-    
-    # Step 2: Plan action
     action = reasoning.plan(processed)
-    
-    # Step 3: Execute action
     result = executor.execute(action)
-    
-    # Step 4: Calculate reward
     reward = reward_system.calculate_reward(result)
     
     return {"processed_input": processed, "action": action, "result": result, "reward": reward}
@@ -88,7 +81,6 @@ async def run_agent_post(input_data: AgentInput):
 def run_multi(task: str = Query(..., description="Task for planner and executor")):
     logger.info(f"/multi-agent called with task: {task}")
     
-    # Reuse modular agents
     processed = input_handler.process_input(task)
     plan = reasoning.plan(processed)
     result = executor.execute(plan)
