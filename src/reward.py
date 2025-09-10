@@ -1,13 +1,12 @@
 # src/reward.py
 import logging
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
 class RewardSystem:
     def calculate_reward(self, result: str) -> int:
-        # Ensure native Python int to avoid numpy scalar serialization issues
-        reward = int(np.random.choice([1, -1]))
-        logger.info(f"Calculated reward: {reward}")
+        logger.info(f"Calculating reward for result: {result}")
+        # Simple scoring logic: +1 per executed step
+        steps = result.split("|")
+        reward = len(steps)
         return reward
-
