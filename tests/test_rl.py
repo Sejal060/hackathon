@@ -1,5 +1,9 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath('.'))  # For rl_engine.py in root
+
 import pytest
-from rl_engine import RLEngine    
+from rl_engine import RLEngine 
 
 def test_rl_engine():
     engine = RLEngine("test")

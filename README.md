@@ -105,3 +105,17 @@ The sprint was structured into **daily goals (MVPs)**, learning outcomes, and va
 git clone https://github.com/Sejal060/hackathon.git
 cd hackathon
 pip install -r requirements.txt
+
+**Working demo link**: [Live API Demo](https://ai-agent-x2iw.onrender.com/docs) (FastAPI on Render.com – test endpoints interactively!).
+   - Root: https://ai-agent-x2iw.onrender.com/
+   - Health check: https://ai-agent-x2iw.onrender.com/ping
+
+   ## 🧪 Quick Test Guide (What to Evaluate)
+1. Visit [Live Demo](https://ai-agent-x2iw.onrender.com/docs).
+2. Test **/ping**: Should return `{"status": "ok"}`.
+3. Test **/agent** (GET): Query `?input=Plan a hackathon trip` – expect JSON with `processed_input`, `action`, `result`, `reward`.
+4. Test **/multi-agent** (GET): Query `?task=Build an AI agent` – expect `plan`, `result`, `reward`.
+5. Edge case: Invalid input (e.g., empty `input=`) – should handle gracefully (no crash, returns error dict).
+6. Check logs in Render dashboard for any issues.
+
+Expected: <3s responses, modular flow (input → reasoning → execution → reward).

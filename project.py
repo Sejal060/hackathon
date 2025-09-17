@@ -9,6 +9,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
+import requests  # For self-health check if needed
 
 # Import our custom modules
 from config import Config, COMPETITION_CATEGORIES, HACKATHON_SCHEDULE
@@ -59,7 +60,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 def display_system_status():
     """Display system configuration status"""
     st.sidebar.markdown("### 🔧 System Status")
@@ -72,6 +72,11 @@ def display_system_status():
 
     for item, status in status_items:
         st.sidebar.markdown(f"{status} {item}")
+
+def health_check():
+    """Health check page to verify system status"""
+    st.write("Status: OK")
+    st.write(f"Groq API: {'Configured' if Config.GROQ_API_KEY else 'Missing'}")
 
 def home_page():
     """Enhanced home page with comprehensive features"""
@@ -246,7 +251,6 @@ def project_submission():
 
                 except ValueError as e:
                     st.error(f"Submission failed: {str(e)}")
-
 
 def ai_mentor_chat():
     """AI Mentor Chat Interface"""
@@ -523,7 +527,6 @@ def leaderboard():
         with col4:
             st.metric("Colleges", stats["total_colleges"])
 
-
 def admin_panel():
     """Admin panel for event management"""
     st.header("🔧 Admin Panel")
@@ -669,7 +672,8 @@ def main():
         "🎯 Challenge Generator": challenge_generator_page,
         "🏆 Leaderboard": leaderboard,
         "⚖️ Judge Panel": judge_panel,
-        "🔧 Admin Panel": admin_panel
+        "🔧 Admin Panel": admin_panel,
+        "🩺 Health Check": health_check  # Added health check page
     }
 
     selected_page = st.sidebar.radio("Select Page", list(pages.keys()))
@@ -690,4 +694,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
