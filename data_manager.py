@@ -36,6 +36,19 @@ class DataManager:
         except Exception as e:
             print(f"Error saving {file_path}: {e}")
             return False
+
+    # ✅ NEW: Reset method for tests
+    def reset_data(self):
+        """Clear all data files (used to reset state between tests)"""
+        for file_path in [
+            Config.TEAMS_FILE,
+            Config.PROJECTS_FILE,
+            Config.PROBLEM_FILE,
+            Config.SCORES_FILE,
+            Config.OUTREACH_FILE
+        ]:
+            if os.path.exists(file_path):
+                self.save_json(file_path, [])
     
     # Problem Statements Management
     def get_problems(self) -> List[Dict[str, Any]]:

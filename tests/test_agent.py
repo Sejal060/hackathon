@@ -7,7 +7,7 @@ import logging
 from unittest.mock import patch, Mock
 
 # Now import modules
-from agent import BasicAgent  # Relative import after path fix
+from src.agent import BasicAgent
 from reward import RewardSystem
 import multi_agent as multi_agent_module
 from data_manager import DataManager

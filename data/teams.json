@@ -1,99 +1,26 @@
 [
   {
-    "id": "9ce948eb",
-    "team_name": "AI Innovators",
+    "id": "9f1d56a4",
+    "team_name": "TestTeam",
     "members": [
-      "John Doe",
-      "Jane Smith",
-      "Alex Chen"
+      "Member1"
     ],
-    "email": "ai.innovators@example.com",
-    "college": "IIT Delhi",
-    "contact_number": "+91-9876543210",
-    "registered_at": "2025-07-31T13:55:15.709406",
+    "email": "test@email.com",
+    "college": "TestCollege",
+    "contact_number": "",
+    "registered_at": "2025-09-17T16:37:41.877154",
     "status": "registered"
   },
   {
-    "id": "73766be1",
-    "team_name": "Code Crusaders",
+    "id": "db5849ac",
+    "team_name": "TestTeam2",
     "members": [
-      "Sarah Wilson",
-      "Mike Johnson"
+      "Member2"
     ],
-    "email": "codecrusaders@example.com",
-    "college": "DTU",
-    "contact_number": "+91-9876543211",
-    "registered_at": "2025-07-31T13:55:15.715754",
-    "status": "registered"
-  },
-  {
-    "id": "5d7ab920",
-    "team_name": "Tech Titans",
-    "members": [
-      "Priya Sharma",
-      "Rahul Kumar",
-      "Anita Patel",
-      "David Lee"
-    ],
-    "email": "techtitans@example.com",
-    "college": "NSUT",
-    "contact_number": "+91-9876543212",
-    "registered_at": "2025-07-31T13:55:15.721550",
-    "status": "registered"
-  },
-  {
-    "id": "cc97f2e5",
-    "team_name": "Quantum Coders",
-    "members": [
-      "Lisa Zhang",
-      "Carlos Rodriguez",
-      "Aisha Khan"
-    ],
-    "email": "quantumcoders@example.com",
-    "college": "IIT Delhi",
-    "contact_number": "+91-9876543213",
-    "registered_at": "2025-07-31T13:55:15.730392",
-    "status": "registered"
-  },
-  {
-    "id": "9aa905ef",
-    "team_name": "Digital Dreamers",
-    "members": [
-      "Ravi Gupta",
-      "Sneha Reddy"
-    ],
-    "email": "digitaldreamers@example.com",
-    "college": "DTU",
-    "contact_number": "+91-9876543214",
-    "registered_at": "2025-07-31T13:55:15.738604",
-    "status": "registered"
-  },
-  {
-    "id": "8bf3e05b",
-    "team_name": "Hack Universse",
-    "members": [
-      "Rahul",
-      "Rohit",
-      "Rakesh"
-    ],
-    "email": "abc@gmail.com",
-    "college": "Mumbai University",
-    "contact_number": "8889996655",
-    "registered_at": "2025-07-31T14:09:12.156930",
-    "status": "registered"
-  },
-  {
-    "id": "f7c3e4df",
-    "team_name": "GreenThumbAI",
-    "members": [
-      "Sejal Dongre",
-      "Prajakta Gaikwad",
-      "Apeksha Pansare"
-    ],
-    "email": "greenthumbai@gmail.com",
-    "college": "mumbai ",
-    "contact_number": "8010360195",
-    "registered_at": "2025-09-09T13:09:13.183891",
+    "email": "test2@email.com",
+    "college": "TestCollege2",
+    "contact_number": "",
+    "registered_at": "2025-09-17T16:39:15.375154",
     "status": "registered"
   }
 ]

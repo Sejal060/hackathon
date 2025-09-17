@@ -1,5 +1,6 @@
 # src/multi_agent.py
-from .agent import BasicAgent
+from agent import BasicAgent
+
 import logging
 import numpy as np  # for random rewards
 

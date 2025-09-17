@@ -3,7 +3,8 @@ import os
 sys.path.insert(0, os.path.abspath('src'))
 
 import pytest
-from ai_agents import AgentFactory
+from agent import AgentFactory
+
 @pytest.fixture
 def agents():
     return {
