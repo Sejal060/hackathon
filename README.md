@@ -60,7 +60,7 @@ The sprint was structured into **daily goals (MVPs)**, learning outcomes, and va
   - CI/CD with GitHub Actions.  
 - **Values**: Honesty.  
 - **Daily MVP**:  
-  - Live public demo URL.  
+  - Live public demo URL:  https://ai-agent-x2iw.onrender.com
   - Auto-deploy workflow configured.  
 
 ---
@@ -90,7 +90,7 @@ The sprint was structured into **daily goals (MVPs)**, learning outcomes, and va
 
 ## 📦 Final Deliverables
 1. Public repo (tag: `day7-production`).  
-2. Working demo link.  
+2. Working demo link :  https://ai-agent-x2iw.onrender.com
 3. Demo video (2–3 minutes).  
 4. Reflection (200–500 words).  
 5. `feedback.md` (peer outreach notes).  
