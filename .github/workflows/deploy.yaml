@@ -11,8 +11,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -r requirements.txt
-      - run: pytest --cov=src --cov-report=xml
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov  # Explicitly install pytest-cov
+      - name: Run Tests
+        run: pytest --cov=src --cov-report=xml
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main'
