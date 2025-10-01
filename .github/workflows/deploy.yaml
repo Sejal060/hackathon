@@ -2,12 +2,22 @@ name: Deploy to Render
 on:
   push:
     branches: [ main ]
+  pull_request:
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: pytest --cov=src --cov-report=xml
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Trigger Render Deploy
         run: curl -X POST -d '' ${{ secrets.RENDER_WEBHOOK }}
-        env:
-          RENDER_WEBHOOK: ${{ secrets.RENDER_WEBHOOK }}
