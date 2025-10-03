@@ -202,22 +202,21 @@ def test_agent_endpoint_exception(mocker):
         response = app.__call__({"path": "/agent", "query_string": b"input=test"})
 
 def test_agent_endpoint_logging_invalid(caplog):
-    """Test logging in /agent endpoint with invalid input"""
     from src.main import app
     from fastapi.testclient import TestClient
     caplog.set_level(logging.INFO)
-    with TestClient(app) as client:  # Use context manager for proper lifecycle
-        response = client.get("/agent?input=")  # Simulate GET with empty input
-        assert response.status_code == 200
-        assert any("called with input:" in r.getMessage() for r in caplog.records)
+    with TestClient(app) as client:
+        response = client.get("/agent?input=")
+        assert response.status_code == 422
+        assert any("Validation error" in r.getMessage() for r in caplog.records)
         
 def test_cors_middleware():
-    """Test CORS middleware is applied"""
     from src.main import app
-    from fastapi.middleware.cors import CORSMiddleware
-    middleware = next((m for m in app.user_middleware if m.cls == CORSMiddleware), None)
-    assert middleware is not None
-    assert middleware.options["allow_origins"] == ["*"]
+    from fastapi.testclient import TestClient
+    with TestClient(app) as client:
+        response = client.get("/ping", headers={"Origin": "http://example.com"})
+        assert response.status_code == 200
+        assert response.headers.get("Access-Control-Allow-Origin") == "*", "CORS not applied"
 
 def test_reward_system_exception(mocker):
     """Test RewardSystem handles exceptions gracefully"""
