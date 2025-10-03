@@ -1,0 +1,153 @@
+{
+	"info": {
+		"_postman_id": "77f92738-d700-45bf-a94a-49cea05eb155",
+		"name": "\"Sejal's AI Agent System\"",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48989793",
+		"_collection_link": "https://sejal060-4895477.postman.co/workspace/ba26cd65-1745-481f-8084-c47728e3a5ac/collection/48989793-77f92738-d700-45bf-a94a-49cea05eb155?action=share&source=collection_link&creator=48989793"
+	},
+	"item": [
+		{
+			"name": "Get Root",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ai-agent-x2iw.onrender.com/",
+					"protocol": "https",
+					"host": [
+						"ai-agent-x2iw",
+						"onrender",
+						"com"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Ping",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ai-agent-x2iw.onrender.com/ping",
+					"protocol": "https",
+					"host": [
+						"ai-agent-x2iw",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Agent",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_input\": \"test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ai-agent-x2iw.onrender.com/agent",
+					"protocol": "https",
+					"host": [
+						"ai-agent-x2iw",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"agent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post agent",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_input\": \"test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ai-agent-x2iw.onrender.com/agent",
+					"protocol": "https",
+					"host": [
+						"ai-agent-x2iw",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"agent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Multiagent",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ai-agent-x2iw.onrender.com/multi-agent?task=test",
+					"protocol": "https",
+					"host": [
+						"ai-agent-x2iw",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"multi-agent"
+					],
+					"query": [
+						{
+							"key": "task",
+							"value": "test"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
