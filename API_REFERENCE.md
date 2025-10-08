@@ -1,82 +1,106 @@
-# API Reference
+API Reference
+Overview
+This document outlines the FastAPI endpoints for the AI Agent System, deployed at backend.gurukul-ai.in. Access API documentation at /docs or download the OpenAPI schema at /openapi.json.
+Endpoints
+1. GET /agent
 
-This document describes the API endpoints, parameters, and responses for Sejal's AI Agent System. All responses are in JSON format. Use the /docs endpoint for interactive Swagger UI.
+Description: Runs a single agent with the provided input.
+Query Parameters:
+input (string, required, min_length=1): The user input for the agent.
 
-## General Information
-- **Base URL**: https://ai-agent-x2iw.onrender.com
-- **Authentication**: None (public API)
-- **Error Responses**: 
-  - 422 Unprocessable Entity: Validation errors (e.g., missing or empty input/task)
-  - 500 Internal Server Error: Unexpected issues
-- **Coverage**: ≥ 80%  coverage.xml or htmlcov/index.html)
 
-## Endpoints
-
-### GET /
-- **Description**: Root endpoint to confirm the API is running.
-- **Parameters**: None
-- **Response** (200 OK):
-{
-"message": "FastAPI is running 🚀",
-"docs": "/docs"
+Response (200 OK):{
+  "processed_input": "string",
+  "action": "string",
+  "result": "string",
+  "reward": 1.0
 }
 
 
-### GET /ping
-- **Description**: Health check endpoint to verify service availability.
-- **Parameters**: None
-- **Response** (200 OK):
-{"status": "ok"}
+Errors:
+422: {"detail": "String should have at least 1 character"} (validation error).
+500: {"detail": "Internal Server Error"} (execution failure).
 
 
-### GET /agent
-- **Description**: Execute a single agent with a given input.
-- **Parameters**:
-- `input` (query, string, required, min_length=1): Input text for the agent to process.
-- **Response** (200 OK): AgentResponse model
-{
-"processed_input": "string",
-"action": "string",
-"result": "string",
-"reward": integer
-}
 
-- **Error Example** (422):
-{
-"detail": "Input cannot be empty"
+2. POST /agent
+
+Description: Runs a single agent with input and optional context.
+Request Body:{
+  "user_input": "string",
+  "context": {"key": "value"} (optional)
 }
 
 
-### POST /agent
-- **Description**: Execute a single agent with a JSON body input.
-- **Body**: AgentInput model
-{
-"user_input": "string" (required)
+Response (200 OK):{
+  "processed_input": "string",
+  "action": "string",
+  "result": "string",
+  "reward": 1.0
 }
 
-- **Response** (200 OK): AgentResponse model (same as GET /agent)
-{
-"processed_input": "string",
-"action": "string",
-"result": "string",
-"reward": integer
+
+Errors:
+422: {"detail": "Validation error"} (invalid JSON).
+500: {"detail": "Internal Server Error"}.
+
+
+
+3. GET /multi-agent
+
+Description: Runs a multi-agent plan for the given task.
+Query Parameters:
+task (string, required, min_length=1): The task for the multi-agent system.
+
+
+Response (200 OK):{
+  "processed_task": "string",
+  "plan": "string",
+  "result": "string",
+  "reward": 1.0
 }
 
-- **Error Example** (422): Validation error if `user_input` is missing or empty.
 
-### GET /multi-agent
-- **Description**: Execute a multi-agent task with a given task description.
-- **Parameters**:
-- `task` (query, string, required, min_length=1): Task for the planner and executor to process.
-- **Response** (200 OK): MultiAgentResponse model
-{
-"processed_task": "string",
-"plan": "string",
-"result": "string",
-"reward": integer
+Errors:
+422: {"detail": "String should have at least 1 character"}.
+500: {"detail": "Internal Server Error"}.
+
+
+
+4. POST /reward
+
+Description: Calculates a reward based on action and outcome.
+Request Body:{
+  "action": "string",
+  "outcome": "string" (optional)
 }
 
-- **Error Example** (422):
-{
-"detail": "Task cannot be empty"
+
+Response (200 OK):{
+  "reward_value": 1.0,
+  "feedback": "string"
 }
+
+
+Errors:
+422: {"detail": "Validation error"}.
+500: {"detail": "Internal Server Error"}.
+
+
+
+5. GET /logs
+
+Description: Retrieves all logged actions.
+Response (200 OK):[
+  {
+    "timestamp": "2025-10-08T13:00:00Z",
+    "level": "INFO",
+    "message": "string"
+  }
+]
+
+
+Errors:
+500: {"detail": "Internal Server Error"}.
+
+
