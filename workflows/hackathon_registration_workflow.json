@@ -1,0 +1,159 @@
+{
+  "name": "Hackathon Registration Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "path": "team-registered",
+        "method": "POST",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8002/register",
+        "method": "POST",
+        "bodyContentType": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Register Team",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8002/store",
+        "method": "POST",
+        "bodyContentType": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "4",
+      "name": "Store in BHIV Bucket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@hackathon.com",
+        "toEmail": "judges@example.com",
+        "subject": "New Team Registered",
+        "text": "=A new team has registered: {{ $json.team_name }}\nTeam ID: {{ $json.team_id }}\nMembers: {{ $json.members.join(', ') }}",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Email Judges",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1050,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8002/agent",
+        "method": "POST",
+        "bodyContentType": "json",
+        "jsonBody": "={\"user_input\": \"Evaluate team {{ $json.team_name }} with members {{ $json.members.join(', ') }} from {{ $json.college }} for hackathon participation\", \"context\": {\"team_id\": \"{{ $json.team_id }}\", \"registration_time\": \"{{ $now }}\"}}",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Run Agent Evaluation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1250,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Register Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Team": {
+      "main": [
+        [
+          {
+            "node": "Store in BHIV Bucket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in BHIV Bucket": {
+      "main": [
+        [
+          {
+            "node": "Email Judges",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Judges": {
+      "main": [
+        [
+          {
+            "node": "Run Agent Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "hackathon_registration_workflow"
+}

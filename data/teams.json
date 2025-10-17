@@ -95,5 +95,44 @@
     "contact_number": "8010360195",
     "registered_at": "2025-09-09T13:09:13.183891",
     "status": "registered"
+  },
+  {
+    "id": "8fdf8740",
+    "team_name": "Team Alpha",
+    "members": [
+      "Alice",
+      "Bob"
+    ],
+    "email": "team@example.com",
+    "college": "XYZ University",
+    "contact_number": "",
+    "registered_at": "2025-10-17T15:04:51.145174",
+    "status": "registered"
+  },
+  {
+    "id": "ee19d373",
+    "team_name": "Team Beta",
+    "members": [
+      "Charlie",
+      "David"
+    ],
+    "email": "beta@example.com",
+    "college": "ABC University",
+    "contact_number": "",
+    "registered_at": "2025-10-17T15:05:14.749669",
+    "status": "registered"
+  },
+  {
+    "id": "63f67df2",
+    "team_name": "Team Gamma",
+    "members": [
+      "Eve",
+      "Frank"
+    ],
+    "email": "gamma@example.com",
+    "college": "DEF University",
+    "contact_number": "",
+    "registered_at": "2025-10-17T15:05:33.569665",
+    "status": "registered"
   }
 ]
