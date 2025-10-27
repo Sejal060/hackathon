@@ -1,0 +1,8 @@
+{
+  "name": "Team Registration Workflow",
+  "nodes": [
+    {"type": "webhook", "name": "Receive Registration"},
+    {"type": "httpRequest", "name": "Send to /register"}
+  ],
+  "active": false
+}

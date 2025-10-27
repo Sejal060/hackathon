@@ -1,0 +1,8 @@
+{
+  "name": "MentorBot Prompt Workflow",
+  "nodes": [
+    {"type": "webhook", "name": "Mentor Request"},
+    {"type": "httpRequest", "name": "Send to /agent"}
+  ],
+  "active": false
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Judging Reminder Workflow",
+  "nodes": [
+    {"type": "scheduleTrigger", "name": "Check Submissions"},
+    {"type": "emailSend", "name": "Notify Judges"}
+  ],
+  "active": false
+}
