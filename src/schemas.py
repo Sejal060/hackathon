@@ -1,12 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class AgentRequest(BaseModel):
-    task_id: Optional[str] = None
-    agent: str
-    input: str
-    tags: List[str] = []
-    retries: int = 3
+    team_id: str = Field(..., examples=["team_42"])
+    submission_url: str = Field(..., examples=["https://.../project.zip"])
 
 class RewardRequest(BaseModel):
     team_id: str

@@ -14,6 +14,7 @@ from src.input_handler import InputHandler
 from src.reasoning import ReasoningModule
 from src.executor import Executor
 from src.reward import RewardSystem
+from src import routes  # Import router objects
 
 # Load environment variables
 load_dotenv()
@@ -65,126 +66,143 @@ class MultiAgentResponse(BaseModel):
     result: str
     reward: float
 
-# Initialize FastAPI and modules
-def initialize_app(custom_executor=None):
-    app = FastAPI(
-        title="Sejal's AI Agent System",
-        description="Stable API for AI agents with RL. Ready for frontend integration.",
-        version="1.0.0",
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json"
+# Initialize modules
+input_handler = InputHandler()
+reasoning = ReasoningModule()
+executor = Executor()
+reward_system = RewardSystem()
+
+# Define OpenAPI tags
+tags_metadata = [
+    {
+        "name": "agent",
+        "description": "Agent operations for processing inputs and generating actions",
+    },
+    {
+        "name": "reward",
+        "description": "Reward system for evaluating agent actions",
+    },
+    {
+        "name": "logs",
+        "description": "Logging and monitoring endpoints",
+    },
+]
+
+# Initialize FastAPI with updated metadata
+app = FastAPI(
+    title="HackaVerse API",
+    description="Hackathon engine — agent /reward /logs",
+    version="v2.0",
+    contact={"name": "Sejal & Team", "email": "youremail@example.com"},
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    openapi_tags=tags_metadata
+)
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Replace with app.gurukul-ai.in in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(routes.agent_router)
+app.include_router(routes.reward_router)
+app.include_router(routes.logs_router)
+
+# Global error handlers
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    log_action(f"Validation error: {exc}", level="ERROR")
+    return JSONResponse({"detail": str(exc)}, status_code=422)
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    log_action(f"Unexpected error: {exc}", level="ERROR")
+    return JSONResponse({"detail": "Internal Server Error"}, status_code=500)
+
+# Root endpoint
+@app.get("/")
+def root():
+    log_action("Root endpoint called")
+    return {"message": "FastAPI is running 🚀", "docs": "/docs"}
+
+# Ping endpoint
+@app.get("/ping")
+def ping():
+    log_action("Ping endpoint called")
+    return {"status": "ok"}
+
+# GET /agent endpoint
+@app.get("/agent", response_model=AgentResponse, tags=["agent"])
+def run_agent(input: str = Query(..., description="Input text for the agent", min_length=1)):
+    log_action(f"/agent GET called with input: {input}")
+    if not input.strip():
+        raise HTTPException(status_code=422, detail="Input cannot be empty")
+    processed = input_handler.process_input(input)
+    action = reasoning.plan(processed)  # No context for GET
+    result = executor.execute(action)
+    reward, _ = reward_system.calculate_reward(result)
+    return AgentResponse(
+        processed_input=processed,
+        action=action,
+        result=result,
+        reward=float(reward)
     )
 
-    # Enable CORS
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # Replace with app.gurukul-ai.in in production
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+# POST /agent endpoint
+@app.post("/agent", response_model=AgentResponse, tags=["agent"])
+def run_agent_post(input_data: AgentInput):
+    log_action(f"/agent POST called with input: {input_data.user_input}")
+    processed = input_handler.process_input(input_data.user_input)
+    action = reasoning.plan(processed, input_data.context)  # Pass context
+    result = executor.execute(action)
+    reward, _ = reward_system.calculate_reward(result)
+    return AgentResponse(
+        processed_input=processed,
+        action=action,
+        result=result,
+        reward=float(reward)
     )
 
-    # Initialize modules with optional custom executor
-    app.input_handler = InputHandler()
-    app.reasoning = ReasoningModule()
-    app.executor = custom_executor if custom_executor else Executor()
-    app.reward_system = RewardSystem()
+# GET /multi-agent endpoint
+@app.get("/multi-agent", response_model=MultiAgentResponse, tags=["agent"])
+def run_multi(task: str = Query(..., description="Task for planner and executor", min_length=1)):
+    log_action(f"/multi-agent called with task: {task}")
+    processed = input_handler.process_input(task)
+    plan = reasoning.plan(processed)  # No context for GET
+    result = executor.execute(plan)
+    reward, _ = reward_system.calculate_reward(result)
+    return MultiAgentResponse(
+        processed_task=processed,
+        plan=plan,
+        result=result,
+        reward=float(reward)
+    )
 
-    # Global error handlers
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request, exc):
-        log_action(f"Validation error: {exc}", level="ERROR")
-        return JSONResponse({"detail": str(exc)}, status_code=422)
-
-    @app.exception_handler(Exception)
-    async def general_exception_handler(request, exc):
-        log_action(f"Unexpected error: {exc}", level="ERROR")
-        return JSONResponse({"detail": "Internal Server Error"}, status_code=500)
-
-    # Root endpoint
-    @app.get("/")
-    def root():
-        log_action("Root endpoint called")
-        return {"message": "FastAPI is running 🚀", "docs": "/docs"}
-
-    # Ping endpoint
-    @app.get("/ping")
-    def ping():
-        log_action("Ping endpoint called")
-        return {"status": "ok"}
-
-    # GET /agent endpoint
-    @app.get("/agent", response_model=AgentResponse)
-    def run_agent(input: str = Query(..., description="Input text for the agent", min_length=1)):
-        log_action(f"/agent GET called with input: {input}")
-        if not input.strip():
-            raise HTTPException(status_code=422, detail="Input cannot be empty")
-        processed = app.input_handler.process_input(input)
-        action = app.reasoning.plan(processed)  # No context for GET
-        result = app.executor.execute(action)
-        reward, _ = app.reward_system.calculate_reward(result)
-        return AgentResponse(
-            processed_input=processed,
-            action=action,
-            result=result,
-            reward=float(reward)
+# POST /reward endpoint
+@app.post("/reward", response_model=RewardResponse, tags=["reward"])
+def calculate_reward_endpoint(input_data: RewardInput):
+    log_action(f"/reward called with action: {input_data.action}")
+    try:
+        reward_value, feedback = reward_system.calculate_reward(input_data.action, input_data.outcome)
+        return RewardResponse(
+            reward_value=float(reward_value),
+            feedback=feedback
         )
+    except Exception as e:
+        log_action(f"Error in /reward: {str(e)}", level="ERROR")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # POST /agent endpoint
-    @app.post("/agent", response_model=AgentResponse)
-    def run_agent_post(input_data: AgentInput):
-        log_action(f"/agent POST called with input: {input_data.user_input}")
-        processed = app.input_handler.process_input(input_data.user_input)
-        action = app.reasoning.plan(processed, input_data.context)  # Pass context
-        result = app.executor.execute(action)
-        reward, _ = app.reward_system.calculate_reward(result)
-        return AgentResponse(
-            processed_input=processed,
-            action=action,
-            result=result,
-            reward=float(reward)
-        )
-
-    # GET /multi-agent endpoint
-    @app.get("/multi-agent", response_model=MultiAgentResponse)
-    def run_multi(task: str = Query(..., description="Task for planner and executor", min_length=1)):
-        log_action(f"/multi-agent called with task: {task}")
-        processed = app.input_handler.process_input(task)
-        plan = app.reasoning.plan(processed)  # No context for GET
-        result = app.executor.execute(plan)
-        reward, _ = app.reward_system.calculate_reward(result)
-        return MultiAgentResponse(
-            processed_task=processed,
-            plan=plan,
-            result=result,
-            reward=float(reward)
-        )
-
-    # POST /reward endpoint
-    @app.post("/reward", response_model=RewardResponse)
-    def calculate_reward_endpoint(input_data: RewardInput):
-        log_action(f"/reward called with action: {input_data.action}")
-        try:
-            reward_value, feedback = app.reward_system.calculate_reward(input_data.action, input_data.outcome)
-            return RewardResponse(
-                reward_value=float(reward_value),
-                feedback=feedback
-            )
-        except Exception as e:
-            log_action(f"Error in /reward: {str(e)}", level="ERROR")
-            raise HTTPException(status_code=500, detail=str(e))
-
-    # GET /logs endpoint
-    @app.get("/logs", response_model=List[LogEntry])
-    def get_logs():
-        log_action("Logs endpoint called")
-        return logs  # TODO: Replace with Firebase query in Nipun's storage layer
-
-    return app
-
-# Initial app instance
-app = initialize_app()
+# GET /logs endpoint
+@app.get("/logs", response_model=List[LogEntry], tags=["logs"])
+def get_logs():
+    log_action("Logs endpoint called")
+    return logs  # TODO: Replace with Firebase query in Nipun's storage layer
 
 if __name__ == "__main__":
     import uvicorn

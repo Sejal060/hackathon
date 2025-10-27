@@ -1,6 +1,9 @@
 # src/reward.py
 import logging
+import time
+import json
 from typing import Tuple, Optional
+from src.integrations.bhiv_connectors import send_to_core, save_to_bucket
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +41,30 @@ class RewardSystem:
                 feedback = f"Failure: {len(steps)} step(s) with negative outcome"
             else:
                 feedback = f"Neutral: {len(steps)} step(s) processed"
+
+        # Prepare payload for BHIV integration
+        payload = {
+            "action": action,
+            "outcome": outcome,
+            "reward": reward,
+            "feedback": feedback,
+            "timestamp": time.time(),
+            "steps_count": len(steps)
+        }
+        
+        # Send to BHIV Core and save to BHIV Bucket
+        try:
+            core_resp = send_to_core(payload)
+            logger.info(f"Sent reward data to BHIV Core: {core_resp}")
+        except Exception as e:
+            logger.warning(f"Failed to send reward data to BHIV Core: {str(e)}")
+        
+        try:
+            filename = f"reward_{int(time.time())}.json"
+            bucket_path = save_to_bucket(payload, filename)
+            logger.info(f"Saved reward data to BHIV Bucket: {bucket_path}")
+        except Exception as e:
+            logger.warning(f"Failed to save reward data to BHIV Bucket: {str(e)}")
 
         logger.info(f"Reward calculated: {reward}, Feedback: {feedback}")
         return float(reward), feedback

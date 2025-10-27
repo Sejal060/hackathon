@@ -1,101 +1,3 @@
-🚀 Sejal Hackathon – Backend Handover Sprint
-This repository documents my 1-Day Backend Handover Sprint, finalizing an AI-powered Agent System for live deployment and integration with the Gurukul team. The sprint focuses on API finalization, deployment, testing, and comprehensive documentation, embodying values of humility, gratitude, and honesty.
-The system is live at https://ai-agent-x2iw.onrender.com, with interactive API docs at /docs and OpenAPI schema at /openapi.json.
-
-📅 Sprint Plan
-Day 1 – Foundation & Repo Setup
-
-Learning: Repo best practices (README, requirements.txt), FastAPI basics, production structure (src/, tests/, docs/).
-Values: Humility, Gratitude.
-MVP: Clean repo structure, initial README with deployment target.
-
-Day 2 – Core Agent Loop
-
-Learning: AI Agent basics (input → reasoning → output), logging importance.
-Values: Honesty.
-MVP: Agent script returning structured JSON, step-by-step logs.
-
-Day 3 – Multi-Agent & RL Basics
-
-Learning: Multi-agent systems (Planner vs Executor), RL basics, reward simulation.
-Values: Humility.
-MVP: Planner & Executor message exchange, logged reward mechanism.
-
-Day 4 – MCPs & Modular Design
-
-Learning: Modular Component Protocols (MCPs), stability through modularity.
-Values: Gratitude.
-MVP: Refactored modules (input_handler.py, reasoning.py, executor.py, reward.py), integration documented.
-
-Day 5 – Deployment to Production
-
-Learning: Deployment on Render, CI/CD with GitHub Actions.
-Values: Honesty.
-MVP: Live demo at https://ai-agent-x2iw.onrender.com, auto-deploy workflow.
-
-Day 6 – Testing & Outreach
-
-Learning: Automated tests with pytest, peer feedback collection.
-Values: Humility, Gratitude.
-MVP: 5+ endpoint tests (90% coverage), feedback.md with notes.
-
-Day 7 – Reflection & Showcase Prep
-
-Learning: Documentation for reviewers, reflection for growth.
-Values: Honesty, Gratitude.
-MVP: Reflection (200–500 words), demo video (2–3 mins), v1.0-handover tag.
-
-
-📦 Final Deliverables
-
-Public repo (tagged v1.0-handover).
-Working demo: https://ai-agent-x2iw.onrender.com.
-Demo video (2–3 minutes).
-Reflection: reflection.md.
-Feedback: feedback.md.
-API Reference: API_REFERENCE.md.
-Integration Guide: integration.md.
-Test Coverage: 90% (see htmlcov/index.html).
-
-
-⚡ Getting Started
-Setup
-git clone https://github.com/Sejal060/hackathon.git
-cd hackathon
-pip install -r requirements.txt
-myenv\Scripts\activate
-uvicorn src.main:app --reload  # Runs at http://127.0.0.1:8000
-
-API Access
-
-Live: https://ai-agent-x2iw.onrender.com
-Docs: https://ai-agent-x2iw.onrender.com/docs
-Schema: https://ai-agent-x2iw.onrender.com/openapi.json
-Details: See API_REFERENCE.md and integration.md for endpoints and frontend integration.
-
-Testing
-
-Run tests: pytest tests/ --cov=src --cov-report=html -v
-Coverage: 90% (report in htmlcov/index.html).
-
-Deployment
-
-CI/CD: GitHub Actions workflow in .github/workflows/deploy.yml triggers auto-deployment to Render on main push.
-Env Vars: Configure GROQ_API_KEY in .env (see RENDER_DEPLOYMENT_GUIDE.md).
-
-
-🤝 Handover to Integration Team
-
-Backend: Live and tested (Sejal).
-Storage: Nipun to connect logs/rewards to MongoDB/Firebase.
-Middleware: Akash to build /api/agent bridge.
-Frontend: Yash to integrate UI via Akash’s endpoint.
-Contact: Sejal for support.
-
-
-.
-
-
 # 🧠 Sejal’s AI Hackathon System
 
 An end-to-end intelligent hackathon management and reflection system integrating MCP Agents, BHIV Core, MongoDB, and N8N automation.
@@ -113,6 +15,35 @@ It includes:
 * ⚙️ **N8N workflows** — automates team registration, reminders, and mentor prompts.
 * 🤖 **Simulation script** — tests 5–10 team interactions automatically.
 * 📊 **Streamlit dashboard** — displays reflection and log data visually.
+
+---
+
+## OpenAPI docs
+
+Live docs URL: https://ai-agent-x2iw.onrender.com/docs
+
+Sample cURL commands and expected HTTP responses:
+
+```bash
+# Get docs (after deployment)
+curl -s https://YOUR_URL/openapi.json | jq '.paths | keys'
+
+# Call agent
+curl -X POST https://YOUR_URL/agent \
+  -H "Content-Type: application/json" \
+  -d '{"team_id":"team_42","submission_url":"https://..." }'
+```
+
+To verify docs locally:
+
+```bash
+# Using the provided script (Unix/Linux/Mac)
+chmod +x scripts/check_docs.sh
+./scripts/check_docs.sh
+
+# Using the provided script (Windows)
+scripts\check_docs.bat
+```
 
 ---
 
@@ -284,7 +215,7 @@ Then open:
 4. Show MongoDB Compass logs
 5. Run Streamlit dashboard
 6. (Optional) Trigger N8N workflow
-7. End with “System fully integrated with BHIV Core”
+7. End with "System fully integrated with BHIV Core"
 
 ---
 
@@ -298,7 +229,7 @@ Then open:
 
 ## 🧠 Integration Note
 
-This project is fully integrated with **Nisarg’s BHIV Core System** through:
+This project is fully integrated with **Nisarg's BHIV Core System** through:
 
 ```
 BHIV_CORE_URL=http://localhost:8002/reason
