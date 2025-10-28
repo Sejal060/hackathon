@@ -1,0 +1,8 @@
+{
+  "action": "Executed: Process input: register team n8n_test_team | Executed: Take general action | Context: location=unknown, priority=normal",
+  "outcome": null,
+  "reward": 3,
+  "feedback": "Reward based on 3 executed step(s)",
+  "timestamp": 1761681346.6333754,
+  "steps_count": 3
+}

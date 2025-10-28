@@ -1,0 +1,6 @@
+{
+  "action": "Process input: register team n8n_test_team -> Take general action | Context: location=unknown, priority=normal",
+  "result": "Executed: Process input: register team n8n_test_team | Executed: Take general action | Context: location=unknown, priority=normal",
+  "timestamp": 1761681331.3458655,
+  "steps_count": 2
+}
