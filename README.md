@@ -111,7 +111,7 @@ MONGO_URI=mongodb://localhost:27017
 
 ## 🧪 Tests and Coverage
 
-### Test Coverage: **82.38%**
+### Test Coverage: **91%**
 
 Tests are implemented for all core components:
 
@@ -123,6 +123,8 @@ Tests are implemented for all core components:
 * ✅ Executor Module (`tests/test_executor.py`)
 * ✅ Reasoning Module (`tests/test_reasoning.py`)
 * ✅ Reinforcement Learning (`tests/test_rl.py`)
+* ✅ Agent Module (`tests/test_agent_additional.py`)
+* ✅ Multi-Agent Module (`tests/test_multi_agent.py`)
 
 ### Run Tests
 
@@ -136,7 +138,7 @@ pytest tests/ --cov=src --cov-report=html --cov-report=xml
 
 ### Test Results
 ```
-===== 44 passed in 257.83s (0:04:17) ======
+===== 60 passed in 261.62s (0:04:21) ======
 ```
 
 ### Coverage Details
@@ -144,13 +146,13 @@ pytest tests/ --cov=src --cov-report=html --cov-report=xml
 Name                                  Stmts   Miss  Cover
 ---------------------------------------------------------
 src\__init__.py                           0      0   100%
-src\agent.py                             24     24     0%
+src\agent.py                             24      0   100%
 src\executor.py                          33      6    82%
 src\input_handler.py                      4      0   100%
 src\integrations\__init__.py              0      0   100%
 src\integrations\bhiv_connectors.py      43      2    95%
 src\main.py                             116      8    93%
-src\multi_agent.py                       17     17     0%
+src\multi_agent.py                       17      0   100%
 src\reasoning.py                         35      8    77%
 src\reward.py                            41      4    90%
 src\routes.py                            40      5    88%
@@ -158,7 +160,7 @@ src\schemas.py                           13      0   100%
 src\storage_service.py                   64      9    86%
 src\transaction_manager.py               58      3    95%
 ---------------------------------------------------------
-TOTAL                                   488     86    82%
+TOTAL                                   488     45    91%
 ```
 
 ---
@@ -256,7 +258,7 @@ Then open:
 
 The system includes N8N workflow automation:
 
-```bash
+```
 n8n/
 ├── README.md
 ├── workflows/
@@ -330,7 +332,7 @@ curl https://ai-agent-x2iw.onrender.com/agent \
 | Simulation Script | ✅      | 7 teams simulated successfully     |
 | Dashboard         | ✅      | Visualization matches MongoDB data |
 | N8N Workflows     | ✅      | Successfully tested via webhooks   |
-| Test Coverage     | ✅      | 82.38% coverage with 44 tests passed |
+| Test Coverage     | ✅      | 91% coverage with 60 tests passed  |
 
 ---
 
@@ -358,7 +360,9 @@ curl https://ai-agent-x2iw.onrender.com/agent \
 
 ---
 
-## 🧠 Integration Note
+## 🧠 Integration Notes
+
+### BHIV Core Integration
 
 This project is fully integrated with **Nisarg's BHIV Core System** through:
 
@@ -371,6 +375,132 @@ and tested with:
 * Local FastAPI backend (port 8001)
 * BHIV Core (port 8002)
 * MongoDB (port 27017)
+
+### Notes for Frontend Integration (Nikhil/Yash)
+
+For frontend developers (Nikhil/Yash) integrating with this backend:
+
+#### How to Consume APIs
+
+1. **Team Registration Endpoint** (`/register`)
+   - POST JSON payload with team details
+   - Example payload:
+     ```json
+     {
+       "team_name": "Frontend_Team",
+       "members": ["Nikhil", "Yash"],
+       "project_title": "Hackathon Dashboard"
+     }
+     ```
+
+2. **Agent Interaction Endpoint** (`/agent`)
+   - POST JSON payload with user query and optional context
+   - Example payload:
+     ```json
+     {
+       "user_input": "How to implement a dashboard?",
+       "context": {
+         "team_id": "frontend_team_123",
+         "project_type": "web_application"
+       }
+     }
+     ```
+
+3. **Reward Endpoint** (`/reward`)
+   - POST JSON payload with action and outcome for reward calculation
+   - Example payload:
+     ```json
+     {
+       "action": "step1 | step2 | step3",
+       "outcome": "success"
+     }
+     ```
+
+#### Shared Environment Variables
+
+Use the following environment variables for consistency:
+- `BHIV_CORE_URL`: Backend API base URL (https://ai-agent-x2iw.onrender.com)
+- For local development, ensure your frontend can access the backend on the same network
+
+#### Handling API Responses
+
+1. **Success Responses**: Parse JSON responses containing `action`, `result`, and `reward` fields
+2. **Error Responses**: Handle HTTP status codes (422 for validation errors, 500 for server errors)
+3. **UI Updates**: Display agent responses in a conversational UI with clear separation of:
+   - User input
+   - Agent thoughts/planning
+   - Executed actions
+   - Results
+   - Reward feedback
+
+#### Example Implementation
+
+For a dashboard view showing team logs:
+- Poll the `/logs` endpoint periodically to get updated logs
+- Display logs in a timeline view with team names and timestamps
+- Use the `/reward` endpoint to submit outcomes and get reward feedback
+
+---
+
+## Client-Side Examples (e.g., for Frontend Integration)
+
+To help frontend developers integrate more easily, here are JavaScript examples using the fetch API:
+
+### Example for /register endpoint
+
+```javascript
+// JavaScript Fetch Example for /register
+fetch('https://ai-agent-x2iw.onrender.com/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    team_name: 'Test_Team',
+    members: ['Sejal', 'Akshay', 'Prajakta'],
+    project_title: 'Smart AI Project'
+  })
+})
+.then(response => response.json())
+.then(data => console.log('Success:', data))
+.catch(error => console.error('Error:', error));
+```
+
+### Example for /agent endpoint
+
+```javascript
+// JavaScript Fetch Example for /agent
+fetch('https://ai-agent-x2iw.onrender.com/agent', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_input: 'Explain how to build a REST API with FastAPI',
+    context: { team_id: 'demo_team', project_type: 'web_application' }
+  })
+})
+.then(response => response.json())
+.then(data => console.log('Success:', data))
+.catch(error => console.error('Error:', error));
+```
+
+### Example for /reward endpoint
+
+```javascript
+// JavaScript Fetch Example for /reward
+fetch('https://ai-agent-x2iw.onrender.com/reward', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    action: 'step1 | step2 | step3',
+    outcome: 'success'
+  })
+})
+.then(response => response.json())
+.then(data => console.log('Reward:', data))
+.catch(error => console.error('Error:', error));
+```
+
+### CORS Considerations
+
+When developing locally, ensure your frontend domain is allowed in backend CORS settings if needed. The backend is configured to accept requests from common development origins.
 
 ---
 
