@@ -1,0 +1,8 @@
+{
+  "action": "step1 | step2 | step3",
+  "outcome": null,
+  "reward": 3,
+  "feedback": "Reward based on 3 executed step(s)",
+  "timestamp": 1761896566.358297,
+  "steps_count": 3
+}

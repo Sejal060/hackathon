@@ -1,0 +1,403 @@
+[
+  {
+    "_id": "6909ac77afb885c72ab8e927",
+    "intent": "registration",
+    "actor": "webhook",
+    "context": "team_name='Test_Team' members=['Sejal', 'Akshay', 'Prajakta'] project_title='Smart AI Project'",
+    "outcome": "success",
+    "timestamp": "2025-11-04T13:04:15.640004"
+  },
+  {
+    "_id": "6909ac60afb885c72ab8e926",
+    "intent": "registration",
+    "actor": "webhook",
+    "context": "team_name='Mock' members=['A'] project_title='Test'",
+    "outcome": "success",
+    "timestamp": "2025-11-04T13:03:52.222900"
+  },
+  {
+    "_id": "6909abb8afb885c72ab8e925",
+    "intent": "registration",
+    "actor": "webhook",
+    "context": "team_name='Mock' members=['A'] project_title='Test'",
+    "outcome": "success",
+    "timestamp": "2025-11-04T13:01:04.396749"
+  },
+  {
+    "_id": "6909a9aa36d063eb43fff3fd",
+    "timestamp": "2025-11-04T12:50:00Z",
+    "level": "INFO",
+    "message": "Manual log entry",
+    "additional_data": {
+      "source": "manual_test"
+    }
+  },
+  {
+    "_id": "6909a866a6a9b75a98d35717",
+    "timestamp": "2025-11-04T12:46:54.707305",
+    "intent": "mcp_flow",
+    "actor": "mcp_router",
+    "context": "Team: full_flow_test",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a866a6a9b75a98d35716",
+    "timestamp": "2025-11-04T12:46:54.704400",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'status': 'mock_response', 'message': \"Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A037AAD0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))\", 'data': {'input': 'complete flow test', 'action': 'Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: complete flow test | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'full_flow_test'}}",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a866a6a9b75a98d35715",
+    "timestamp": "2025-11-04T12:46:54.702674",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A037AAD0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a862a6a9b75a98d35714",
+    "timestamp": "2025-11-04T12:46:50.618564",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connecting to http://localhost:8002/process with payload: {'input': 'complete flow test', 'action': 'Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: complete flow test | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'full_flow_test'}",
+    "outcome": "attempted"
+  },
+  {
+    "_id": "6909a862a6a9b75a98d35713",
+    "timestamp": "2025-11-04T12:46:50.617799",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'input': 'complete flow test', 'action': 'Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: complete flow test | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'full_flow_test'}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a862a6a9b75a98d35712",
+    "timestamp": "2025-11-04T12:46:50.616919",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Result: Executed: Process input: complete flow test | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a862a6a9b75a98d35711",
+    "timestamp": "2025-11-04T12:46:50.615311",
+    "intent": "bucket_save",
+    "actor": "executor",
+    "context": "Saved to BHIV Bucket: ./data/bucket\\execution_1762240610.json",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a862a6a9b75a98d35710",
+    "timestamp": "2025-11-04T12:46:50.612357",
+    "intent": "core_communication",
+    "actor": "executor",
+    "context": "Failed to send to BHIV Core: HTTPConnectionPool(host='localhost', port=9000): Max retries exceeded with url: /bhiv/core (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002659FEB3570>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a853a6a9b75a98d3570f",
+    "timestamp": "2025-11-04T12:46:35.319213",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Result: Executed: Process input: complete flow test | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a853a6a9b75a98d3570e",
+    "timestamp": "2025-11-04T12:46:35.318576",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Steps to execute: ['Process input: complete flow test', 'Take general action | Context: location=unknown, priority=normal']",
+    "outcome": "processing"
+  },
+  {
+    "_id": "6909a853a6a9b75a98d3570d",
+    "timestamp": "2025-11-04T12:46:35.317871",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Action: Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a853a6a9b75a98d3570c",
+    "timestamp": "2025-11-04T12:46:35.316725",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Action: Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a853a6a9b75a98d3570b",
+    "timestamp": "2025-11-04T12:46:35.315479",
+    "intent": "reasoning",
+    "actor": "mcp_router",
+    "context": "Plan: Process input: complete flow test -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a84fa6a9b75a98d3570a",
+    "timestamp": "2025-11-04T12:46:31.186727",
+    "intent": "reasoning",
+    "actor": "mcp_router",
+    "context": "Input: complete flow test, Context: {'test': 'full_flow'}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a84fa6a9b75a98d35709",
+    "timestamp": "2025-11-04T12:46:31.185969",
+    "intent": "input_processing",
+    "actor": "mcp_router",
+    "context": "Processed: complete flow test",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a84fa6a9b75a98d35708",
+    "timestamp": "2025-11-04T12:46:31.183381",
+    "intent": "input_processing",
+    "actor": "mcp_router",
+    "context": "{'team_id': 'full_flow_test', 'prompt': 'Complete flow test', 'metadata': {'test': 'full_flow'}}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a8390940eb15250b2e02",
+    "timestamp": "2025-11-04T12:46:09.783241",
+    "intent": "test_logging",
+    "actor": "test_script",
+    "context": "Testing direct log relay to bucket",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a8207b4c0f8acb29010e",
+    "timestamp": "2025-11-04T12:45:44.822281",
+    "intent": "test_logging",
+    "actor": "test_script",
+    "context": "Testing direct log relay to bucket",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a7afa6a9b75a98d35707",
+    "timestamp": "2025-11-04T12:43:51.098533",
+    "intent": "mcp_flow",
+    "actor": "mcp_router",
+    "context": "Team: logging_test_2",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a7afa6a9b75a98d35706",
+    "timestamp": "2025-11-04T12:43:51.097442",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'status': 'mock_response', 'message': \"Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A037A140>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))\", 'data': {'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}}",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a7afa6a9b75a98d35705",
+    "timestamp": "2025-11-04T12:43:51.095580",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A037A140>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a7aaa6a9b75a98d35704",
+    "timestamp": "2025-11-04T12:43:46.981816",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connecting to http://localhost:8002/process with payload: {'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}",
+    "outcome": "attempted"
+  },
+  {
+    "_id": "6909a7aaa6a9b75a98d35703",
+    "timestamp": "2025-11-04T12:43:46.981207",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a7aaa6a9b75a98d35702",
+    "timestamp": "2025-11-04T12:43:46.980169",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Result: Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a7aaa6a9b75a98d35701",
+    "timestamp": "2025-11-04T12:43:46.978836",
+    "intent": "bucket_save",
+    "actor": "executor",
+    "context": "Saved to BHIV Bucket: ./data/bucket\\execution_1762240426.json",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a7aaa6a9b75a98d35700",
+    "timestamp": "2025-11-04T12:43:46.975366",
+    "intent": "core_communication",
+    "actor": "executor",
+    "context": "Failed to send to BHIV Core: HTTPConnectionPool(host='localhost', port=9000): Max retries exceeded with url: /bhiv/core (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A0379F20>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a79ba6a9b75a98d356ff",
+    "timestamp": "2025-11-04T12:43:31.691715",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Result: Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a79ba6a9b75a98d356fe",
+    "timestamp": "2025-11-04T12:43:31.691022",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Steps to execute: ['Process input: test logging flow', 'Take general action | Context: location=unknown, priority=normal']",
+    "outcome": "processing"
+  },
+  {
+    "_id": "6909a79ba6a9b75a98d356fd",
+    "timestamp": "2025-11-04T12:43:31.690021",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Action: Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a79ba6a9b75a98d356fc",
+    "timestamp": "2025-11-04T12:43:31.688948",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Action: Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a79ba6a9b75a98d356fb",
+    "timestamp": "2025-11-04T12:43:31.687571",
+    "intent": "reasoning",
+    "actor": "mcp_router",
+    "context": "Plan: Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a797a6a9b75a98d356fa",
+    "timestamp": "2025-11-04T12:43:27.600100",
+    "intent": "reasoning",
+    "actor": "mcp_router",
+    "context": "Input: test logging flow, Context: {'source': 'detailed_test'}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a797a6a9b75a98d356f9",
+    "timestamp": "2025-11-04T12:43:27.599684",
+    "intent": "input_processing",
+    "actor": "mcp_router",
+    "context": "Processed: test logging flow",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a797a6a9b75a98d356f8",
+    "timestamp": "2025-11-04T12:43:27.598761",
+    "intent": "input_processing",
+    "actor": "mcp_router",
+    "context": "{'team_id': 'logging_test_2', 'prompt': 'Test logging flow', 'metadata': {'source': 'detailed_test'}}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a78ea6a9b75a98d356f7",
+    "timestamp": "2025-11-04T12:43:18.847779",
+    "intent": "mcp_flow",
+    "actor": "mcp_router",
+    "context": "Team: logging_test_2",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a78ea6a9b75a98d356f6",
+    "timestamp": "2025-11-04T12:43:18.846914",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'status': 'mock_response', 'message': \"Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A03787C0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))\", 'data': {'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}}",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a78ea6a9b75a98d356f5",
+    "timestamp": "2025-11-04T12:43:18.843642",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connection failed: HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /process (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A03787C0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a78aa6a9b75a98d356f4",
+    "timestamp": "2025-11-04T12:43:14.755730",
+    "intent": "core_connection",
+    "actor": "core_connector",
+    "context": "Connecting to http://localhost:8002/process with payload: {'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}",
+    "outcome": "attempted"
+  },
+  {
+    "_id": "6909a78aa6a9b75a98d356f3",
+    "timestamp": "2025-11-04T12:43:14.754243",
+    "intent": "core_communication",
+    "actor": "mcp_router",
+    "context": "{'input': 'test logging flow', 'action': 'Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal', 'result': 'Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal', 'team_id': 'logging_test_2'}",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a78aa6a9b75a98d356f2",
+    "timestamp": "2025-11-04T12:43:14.753291",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Result: Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a78aa6a9b75a98d356f1",
+    "timestamp": "2025-11-04T12:43:14.751634",
+    "intent": "bucket_save",
+    "actor": "executor",
+    "context": "Saved to BHIV Bucket: ./data/bucket\\execution_1762240394.json",
+    "outcome": "success"
+  },
+  {
+    "_id": "6909a78aa6a9b75a98d356f0",
+    "timestamp": "2025-11-04T12:43:14.746128",
+    "intent": "core_communication",
+    "actor": "executor",
+    "context": "Failed to send to BHIV Core: HTTPConnectionPool(host='localhost', port=9000): Max retries exceeded with url: /bhiv/core (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000265A0378380>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "outcome": "failure"
+  },
+  {
+    "_id": "6909a77ba6a9b75a98d356ef",
+    "timestamp": "2025-11-04T12:42:59.489475",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Result: Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal",
+    "outcome": "completed"
+  },
+  {
+    "_id": "6909a77ba6a9b75a98d356ee",
+    "timestamp": "2025-11-04T12:42:59.488978",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Steps to execute: ['Process input: test logging flow', 'Take general action | Context: location=unknown, priority=normal']",
+    "outcome": "processing"
+  },
+  {
+    "_id": "6909a77ba6a9b75a98d356ed",
+    "timestamp": "2025-11-04T12:42:59.488463",
+    "intent": "execution_detail",
+    "actor": "executor",
+    "context": "Action: Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  },
+  {
+    "_id": "6909a77ba6a9b75a98d356ec",
+    "timestamp": "2025-11-04T12:42:59.487564",
+    "intent": "execution",
+    "actor": "mcp_router",
+    "context": "Action: Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
+    "outcome": "started"
+  }
+]
