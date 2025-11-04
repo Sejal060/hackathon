@@ -14,7 +14,6 @@ from src.input_handler import InputHandler
 from src.reasoning import ReasoningModule
 from src.executor import Executor
 from src.reward import RewardSystem
-from src import routes  # Import router objects
 
 # Load environment variables
 load_dotenv()
@@ -110,9 +109,13 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(routes.agent_router)
-app.include_router(routes.reward_router)
-app.include_router(routes.logs_router)
+from .routes.agent import router as agent_router
+from .routes.admin import router as admin_router
+from .routes.system import router as system_router
+
+app.include_router(agent_router)
+app.include_router(admin_router)
+app.include_router(system_router)
 
 # Global error handlers
 @app.exception_handler(RequestValidationError)
@@ -137,72 +140,8 @@ def ping():
     log_action("Ping endpoint called")
     return {"status": "ok"}
 
-# GET /agent endpoint
-@app.get("/agent", response_model=AgentResponse, tags=["agent"])
-def run_agent(input: str = Query(..., description="Input text for the agent", min_length=1)):
-    log_action(f"/agent GET called with input: {input}")
-    if not input.strip():
-        raise HTTPException(status_code=422, detail="Input cannot be empty")
-    processed = input_handler.process_input(input)
-    action = reasoning.plan(processed)  # No context for GET
-    result = executor.execute(action)
-    reward, _ = reward_system.calculate_reward(result)
-    return AgentResponse(
-        processed_input=processed,
-        action=action,
-        result=result,
-        reward=float(reward)
-    )
-
-# POST /agent endpoint
-@app.post("/agent", response_model=AgentResponse, tags=["agent"])
-def run_agent_post(input_data: AgentInput):
-    log_action(f"/agent POST called with input: {input_data.user_input}")
-    processed = input_handler.process_input(input_data.user_input)
-    action = reasoning.plan(processed, input_data.context)  # Pass context
-    result = executor.execute(action)
-    reward, _ = reward_system.calculate_reward(result)
-    return AgentResponse(
-        processed_input=processed,
-        action=action,
-        result=result,
-        reward=float(reward)
-    )
-
-# GET /multi-agent endpoint
-@app.get("/multi-agent", response_model=MultiAgentResponse, tags=["agent"])
-def run_multi(task: str = Query(..., description="Task for planner and executor", min_length=1)):
-    log_action(f"/multi-agent called with task: {task}")
-    processed = input_handler.process_input(task)
-    plan = reasoning.plan(processed)  # No context for GET
-    result = executor.execute(plan)
-    reward, _ = reward_system.calculate_reward(result)
-    return MultiAgentResponse(
-        processed_task=processed,
-        plan=plan,
-        result=result,
-        reward=float(reward)
-    )
-
-# POST /reward endpoint
-@app.post("/reward", response_model=RewardResponse, tags=["reward"])
-def calculate_reward_endpoint(input_data: RewardInput):
-    log_action(f"/reward called with action: {input_data.action}")
-    try:
-        reward_value, feedback = reward_system.calculate_reward(input_data.action, input_data.outcome)
-        return RewardResponse(
-            reward_value=float(reward_value),
-            feedback=feedback
-        )
-    except Exception as e:
-        log_action(f"Error in /reward: {str(e)}", level="ERROR")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# GET /logs endpoint
-@app.get("/logs", response_model=List[LogEntry], tags=["logs"])
-def get_logs():
-    log_action("Logs endpoint called")
-    return logs  # TODO: Replace with Firebase query in Nipun's storage layer
+# Endpoint definitions have been moved to the new route modules
+# See src/routes/agent.py, src/routes/admin.py, and src/routes/system.py
 
 if __name__ == "__main__":
     import uvicorn
