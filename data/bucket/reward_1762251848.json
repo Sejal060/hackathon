@@ -1,0 +1,8 @@
+{
+  "action": "step1 | step2 | step3",
+  "outcome": "success",
+  "reward": 4.5,
+  "feedback": "Success: 3 step(s) with positive outcome",
+  "timestamp": 1762251833.2878435,
+  "steps_count": 3
+}

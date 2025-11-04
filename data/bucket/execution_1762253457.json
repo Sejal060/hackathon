@@ -1,0 +1,6 @@
+{
+  "action": "Process input: register team n8n_test_team -> Take general action",
+  "result": "Executed: Process input: register team n8n_test_team | Executed: Take general action",
+  "timestamp": 1762253442.0219986,
+  "steps_count": 2
+}

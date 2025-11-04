@@ -1,0 +1,8 @@
+{
+  "action": "single_step",
+  "outcome": null,
+  "reward": 1,
+  "feedback": "Reward based on 1 executed step(s)",
+  "timestamp": 1762253119.9875598,
+  "steps_count": 1
+}
