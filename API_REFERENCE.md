@@ -1,106 +1,208 @@
-API Reference
-Overview
-This document outlines the FastAPI endpoints for the AI Agent System, deployed at backend.gurukul-ai.in. Access API documentation at /docs or download the OpenAPI schema at /openapi.json.
-Endpoints
-1. GET /agent
+# HackaVerse API Reference
 
-Description: Runs a single agent with the provided input.
-Query Parameters:
-input (string, required, min_length=1): The user input for the agent.
+## Overview
+HackaVerse API v2.0 - Hackathon engine for agent processing, reward calculation, and logging.
 
+## Base URL
+Local: http://127.0.0.1:8001
+Deployed: https://ai-agent-x2iw.onrender.com
 
-Response (200 OK):{
+## Authentication
+No authentication required for current endpoints.
+
+## Endpoints
+
+### Agent Endpoints
+
+#### POST /agent/
+Process agent requests and generate responses.
+
+**Request Body:**
+```json
+{
+  "team_id": "string",
+  "prompt": "string",
+  "metadata": {}
+}
+```
+
+**Response:**
+```json
+{
   "processed_input": "string",
   "action": "string",
   "result": "string",
-  "reward": 1.0
+  "reward": 0.0,
+  "core_response": {}
 }
+```
 
+**Example:**
+```bash
+curl -X POST https://ai-agent-x2iw.onrender.com/agent/ \
+  -H "Content-Type: application/json" \
+  -d '{"team_id":"team_42","prompt":"How to build a REST API?","metadata":{}}'
+```
 
-Errors:
-422: {"detail": "String should have at least 1 character"} (validation error).
-500: {"detail": "Internal Server Error"} (execution failure).
+### Admin Endpoints
 
+#### POST /admin/reward
+Calculate and apply rewards.
 
-
-2. POST /agent
-
-Description: Runs a single agent with input and optional context.
-Request Body:{
-  "user_input": "string",
-  "context": {"key": "value"} (optional)
+**Request Body:**
+```json
+{
+  "request_id": "string",
+  "outcome": "string"
 }
+```
 
-
-Response (200 OK):{
-  "processed_input": "string",
-  "action": "string",
-  "result": "string",
-  "reward": 1.0
-}
-
-
-Errors:
-422: {"detail": "Validation error"} (invalid JSON).
-500: {"detail": "Internal Server Error"}.
-
-
-
-3. GET /multi-agent
-
-Description: Runs a multi-agent plan for the given task.
-Query Parameters:
-task (string, required, min_length=1): The task for the multi-agent system.
-
-
-Response (200 OK):{
-  "processed_task": "string",
-  "plan": "string",
-  "result": "string",
-  "reward": 1.0
-}
-
-
-Errors:
-422: {"detail": "String should have at least 1 character"}.
-500: {"detail": "Internal Server Error"}.
-
-
-
-4. POST /reward
-
-Description: Calculates a reward based on action and outcome.
-Request Body:{
-  "action": "string",
-  "outcome": "string" (optional)
-}
-
-
-Response (200 OK):{
-  "reward_value": 1.0,
+**Response:**
+```json
+{
+  "reward_value": 0.0,
   "feedback": "string"
 }
+```
 
+#### POST /admin/logs
+Relay logs to bucket.
 
-Errors:
-422: {"detail": "Validation error"}.
-500: {"detail": "Internal Server Error"}.
+**Request Body:**
+```json
+{
+  "timestamp": "string",
+  "level": "string",
+  "message": "string",
+  "additional_data": {}
+}
+```
 
+**Response:**
+```json
+{
+  "status": "string",
+  "result": "string"
+}
+```
 
+#### POST /admin/register
+Register a new team.
 
-5. GET /logs
+**Response:**
+```json
+{
+  "message": "Team registered successfully"
+}
+```
 
-Description: Retrieves all logged actions.
-Response (200 OK):[
-  {
-    "timestamp": "2025-10-08T13:00:00Z",
-    "level": "INFO",
-    "message": "string"
-  }
-]
+#### POST /admin/webhook/hackaverse/registration
+N8N webhook for team registration.
 
+**Request Body:**
+```json
+{
+  "team_name": "string",
+  "members": ["string"],
+  "project_title": "string"
+}
+```
 
-Errors:
-500: {"detail": "Internal Server Error"}.
+**Response:**
+```json
+{
+  "status": "registered"
+}
+```
 
+### System Endpoints
 
+#### GET /system/health
+Check system health.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "version": "v2",
+  "timestamp": "string"
+}
+```
+
+#### GET /ping
+Basic health check.
+
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```
+
+#### GET /
+Root endpoint.
+
+**Response:**
+```json
+{
+  "message": "FastAPI is running 🚀",
+  "docs": "/docs"
+}
+```
+
+## Data Models
+
+### AgentRequest
+```json
+{
+  "team_id": "string",
+  "prompt": "string",
+  "metadata": {}
+}
+```
+
+### AgentResponse
+```json
+{
+  "processed_input": "string",
+  "action": "string",
+  "result": "string",
+  "reward": 0.0,
+  "core_response": {}
+}
+```
+
+### TeamRegistration
+```json
+{
+  "team_name": "string",
+  "members": ["string"],
+  "project_title": "string"
+}
+```
+
+### RewardRequest
+```json
+{
+  "request_id": "string",
+  "outcome": "string"
+}
+```
+
+### RewardResponse
+```json
+{
+  "reward_value": 0.0,
+  "feedback": "string"
+}
+```
+
+### LogRequest
+```json
+{
+  "timestamp": "string",
+  "level": "string",
+  "message": "string",
+  "additional_data": {}
+}
+```
