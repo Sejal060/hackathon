@@ -21,10 +21,8 @@ def test_n8n_workflows():
     print("   Payload: Team registration data")
     
     team_registration_payload = {
-        "user_input": "Register team n8n_test_team",
-        "context": {
-            "team_id": "n8n_test_team"
-        }
+        "team_id": "n8n_test_team",
+        "prompt": "Register team n8n_test_team"
     }
     
     try:
@@ -47,11 +45,8 @@ def test_n8n_workflows():
     print("   Payload: Mentor request data")
     
     mentor_payload = {
-        "user_input": "How do I implement authentication in my FastAPI app?",
-        "context": {
-            "team_id": "n8n_test_team",
-            "project_type": "web_application"
-        }
+        "team_id": "n8n_test_team",
+        "prompt": "How do I implement authentication in my FastAPI app?"
     }
     
     try:
