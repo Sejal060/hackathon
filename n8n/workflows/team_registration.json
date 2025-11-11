@@ -1,8 +1,35 @@
 {
   "name": "Team Registration Workflow",
   "nodes": [
-    {"type": "webhook", "name": "Receive Registration"},
-    {"type": "httpRequest", "name": "Send to /webhook/hackaverse/registration"}
+    {
+      "type": "webhook",
+      "name": "Receive Registration",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hackaverse/registration",
+        "responseMode": "lastNode",
+        "responseData": "json"
+      }
+    },
+    {
+      "type": "httpRequest",
+      "name": "Send to /admin/webhook/hackaverse/registration",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $parameter[\"backendUrl\"] || \"http://localhost:8001/admin/webhook/hackaverse/registration\" }}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "team_name": "={{ $json[\"team_name\"] }}",
+          "members": "={{ $json[\"members\"] }}",
+          "project_title": "={{ $json[\"project_title\"] }}"
+        }
+      }
+    }
   ],
-  "active": false
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
 }

@@ -1,8 +1,35 @@
 {
   "name": "MentorBot Prompt Workflow",
   "nodes": [
-    {"type": "webhook", "name": "Mentor Request"},
-    {"type": "httpRequest", "name": "Send to /agent"}
+    {
+      "type": "webhook",
+      "name": "Mentor Request",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mentorbot/prompt",
+        "responseMode": "lastNode",
+        "responseData": "json"
+      }
+    },
+    {
+      "type": "httpRequest",
+      "name": "Send to /agent",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $parameter[\"backendUrl\"] || \"http://localhost:8001/agent\" }}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "team_id": "={{ $json[\"team_id\"] }}",
+          "prompt": "={{ $json[\"prompt\"] }}",
+          "metadata": "={{ $json[\"metadata\"] || {} }}"
+        }
+      }
+    }
   ],
-  "active": false
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
 }

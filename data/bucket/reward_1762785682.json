@@ -1,0 +1,8 @@
+{
+  "action": "Request verify",
+  "outcome": "test",
+  "reward": 1,
+  "feedback": "Neutral: 1 step(s) processed",
+  "timestamp": 1762785666.9343529,
+  "steps_count": 1
+}

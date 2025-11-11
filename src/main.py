@@ -78,12 +78,12 @@ tags_metadata = [
         "description": "Agent operations for processing inputs and generating actions",
     },
     {
-        "name": "reward",
-        "description": "Reward system for evaluating agent actions",
+        "name": "admin",
+        "description": "Administrative operations including rewards, logs, and registration",
     },
     {
-        "name": "logs",
-        "description": "Logging and monitoring endpoints",
+        "name": "system",
+        "description": "System health and monitoring endpoints",
     },
 ]
 
@@ -129,13 +129,13 @@ async def general_exception_handler(request, exc):
     return JSONResponse({"detail": "Internal Server Error"}, status_code=500)
 
 # Root endpoint
-@app.get("/")
+@app.get("/", summary="Root endpoint")
 def root():
     log_action("Root endpoint called")
     return {"message": "FastAPI is running 🚀", "docs": "/docs"}
 
 # Ping endpoint
-@app.get("/ping")
+@app.get("/ping", summary="Basic health check")
 def ping():
     log_action("Ping endpoint called")
     return {"status": "ok"}

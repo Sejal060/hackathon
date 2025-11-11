@@ -1,0 +1,8 @@
+{
+  "action": "Request test_request_123",
+  "outcome": "success",
+  "reward": 1.5,
+  "feedback": "Success: 1 step(s) with positive outcome",
+  "timestamp": 1762885492.2051952,
+  "steps_count": 1
+}

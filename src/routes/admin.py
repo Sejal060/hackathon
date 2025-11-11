@@ -2,43 +2,69 @@
 from fastapi import APIRouter
 from ..models import RewardRequest, RewardResponse, LogRequest, TeamRegistration
 from ..bucket_connector import relay_to_bucket
+from ..reward import RewardSystem
 from datetime import datetime
+from ..logger import ksml_logger
 
-router = APIRouter(prefix="/admin")
+router = APIRouter(prefix="/admin", tags=["admin"])
 
-@router.post("/reward", response_model=RewardResponse)
+@router.post("/reward", response_model=RewardResponse, summary="Apply reward to a request")
 def reward_endpoint(request: RewardRequest):
-    # Apply reward logic (stub for now)
-    log = {
-        "intent": "reward", 
-        "outcome": request.outcome,
-        "request_id": request.request_id,
-        "timestamp": datetime.now().isoformat()
-    }
-    relay_to_bucket(log)
-    return {"reward_value": 1.0, "feedback": "Reward applied successfully"}
+    """
+    Calculate and apply rewards based on request outcome.
+    
+    - **request_id**: ID of the request to apply reward to
+    - **outcome**: Outcome of the request (success, failure, etc.)
+    """
+    # Apply reward logic
+    reward_system = RewardSystem()
+    reward_value, feedback = reward_system.calculate_reward(f"Request {request.request_id}", request.outcome)
+    
+    # Log the reward calculation using KSML
+    ksml_logger.log_reward_calculation(request.request_id, request.outcome, reward_value)
+    
+    return RewardResponse(reward_value=reward_value, feedback=feedback)
 
-@router.post("/logs")
+@router.post("/logs", summary="Relay logs to bucket")
 def logs_endpoint(request: LogRequest):
+    """
+    Relay logs to the BHIV Bucket.
+    
+    - **timestamp**: Timestamp of the log entry
+    - **level**: Log level (INFO, ERROR, etc.)
+    - **message**: Log message
+    - **additional_data**: Optional additional data
+    """
     # Convert Pydantic model to dict for relay_to_bucket
     log_data = request.dict()
     result = relay_to_bucket(log_data)
     return {"status": "logged", "result": result}
 
-@router.post("/register")
-def register_endpoint():
-    # Placeholder for register endpoint
-    return {"message": "Team registered successfully"}
+@router.post("/register", summary="Register a new team")
+def register_endpoint(team: TeamRegistration):
+    """
+    Register a new team for the hackathon.
+    
+    - **team_name**: Name of the team
+    - **members**: List of team members
+    - **project_title**: Title of the team's project
+    """
+    # Log the registration using KSML
+    ksml_logger.log_registration(team.team_name, team.project_title)
+    
+    return {"message": "Team registered successfully", "team_id": f"team_{team.team_name.lower().replace(' ', '_')}"}
 
-@router.post("/webhook/hackaverse/registration")
+@router.post("/webhook/hackaverse/registration", summary="N8N webhook for team registration")
 def webhook_registration(payload: TeamRegistration):
-    log = {
-        "intent": "registration", 
-        "actor": "webhook", 
-        "context": str(payload), 
-        "outcome": "success",
-        "timestamp": datetime.now().isoformat()
-    }
-    relay_to_bucket(log)
+    """
+    N8N webhook endpoint for team registration automation.
+    
+    - **team_name**: Name of the team
+    - **members**: List of team members
+    - **project_title**: Title of the team's project
+    """
+    # Log the registration using KSML
+    ksml_logger.log_registration(payload.team_name, payload.project_title)
+    
     # Add registration logic if needed
-    return {"status": "registered"}
+    return {"status": "registered", "team_id": f"team_{payload.team_name.lower().replace(' ', '_')}"}

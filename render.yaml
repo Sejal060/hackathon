@@ -9,3 +9,15 @@ services:
         value: "https://placeholder-core-url.com"
       - key: BHIV_BUCKET_DIR
         value: "./data/bucket"
+      - key: MONGO_URI
+        value: "mongodb://localhost:27017"
+      - key: BUCKET_DB_NAME
+        value: "bhiv_db"
+
+  - type: pserv
+    name: mongodb
+    env: docker
+    repo: mongo
+    tag: latest
+    diskSizeGB: 10
+    instanceSize: free

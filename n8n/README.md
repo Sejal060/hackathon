@@ -1,79 +1,92 @@
-# N8N Workflows
+# N8N Workflows for HackaVerse
 
-This directory contains JSON workflow definitions for n8n automation.
+This directory contains N8N workflows for automating various aspects of the HackaVerse hackathon platform.
 
 ## Workflows
 
 ### 1. Team Registration Workflow (`team_registration.json`)
-- **Trigger**: Webhook
-- **Action**: Sends registration data to the `/agent` endpoint
-- **Purpose**: Automates team registration process
 
-### 2. Judging Reminder Workflow (`judging_reminder.json`)
-- **Trigger**: Schedule trigger (cron)
-- **Action**: Sends email notifications to judges
-- **Purpose**: Reminds judges to evaluate submissions
+Automates team registration by receiving webhook requests and forwarding them to the HackaVerse backend.
 
-### 3. MentorBot Prompt Workflow (`mentorbot_prompt.json`)
-- **Trigger**: Webhook
-- **Action**: Sends mentor requests to the `/agent` endpoint
-- **Purpose**: Provides automated mentor support
+**Endpoints:**
+- Webhook: `/webhook/hackaverse/registration`
+- Backend: `/admin/webhook/hackaverse/registration`
 
-## How to Import Workflows
-
-1. Open n8n (local installation or cloud version)
-2. Go to **Settings** → **Import**
-3. Paste the JSON content from any of the workflow files
-4. Save and activate the workflow
-
-## Endpoint Mappings
-
-| Workflow | Trigger Type | Target Endpoint | Purpose |
-|----------|--------------|-----------------|---------|
-| `team_registration.json` | Webhook | `POST /agent` | Process team registration data |
-| `judging_reminder.json` | Schedule | Email service | Send judging reminders |
-| `mentorbot_prompt.json` | Webhook | `POST /agent` | Process mentor requests |
-
-## Testing Workflows
-
-To test these workflows without running n8n:
-
-1. Use the test script `scripts/test_n8n_run.sh`
-2. This script simulates webhook POSTs to your FastAPI endpoints
-3. Check the responses to verify expected behavior
-
-## Example Webhook URLs
-
-After importing and activating workflows in n8n, you'll get webhook URLs like:
-
-```
-https://your-n8n-instance.web.app/webhook/team-registration
-https://your-n8n-instance.web.app/webhook/mentor-request
-```
-
-## Example Payloads
-
-### Team Registration Payload
+**Payload:**
 ```json
 {
-  "team_name": "Test Team",
-  "members": ["Alice", "Bob", "Charlie"],
-  "email": "test@example.com",
-  "college": "Test University"
+  "team_name": "Team Name",
+  "members": ["Member 1", "Member 2"],
+  "project_title": "Project Title"
 }
 ```
 
-### Mentor Request Payload
+### 2. MentorBot Prompt Workflow (`mentorbot_prompt.json`)
+
+Automates mentor requests by receiving prompts and forwarding them to the agent system.
+
+**Endpoints:**
+- Webhook: `/webhook/mentorbot/prompt`
+- Backend: `/agent`
+
+**Payload:**
 ```json
 {
-  "user_input": "How do I implement authentication in my FastAPI app?",
-  "context": {
-    "team_id": "team_123",
-    "project_type": "web_application"
+  "team_id": "team_123",
+  "prompt": "How do I implement authentication?",
+  "metadata": {
+    "project_type": "web_app",
+    "tech_stack": ["React", "Node.js"]
   }
 }
 ```
 
-## Screenshots
+### 3. Judging Reminder Workflow (`judging_reminder.json`)
 
-Workflow execution screenshots and logs are available in the `screenshots/` directory.
+Automatically reminds judges to review submissions on a scheduled basis.
+
+**Schedule:** Every hour
+**Action:** Sends email notification to judges
+
+## Setup Instructions
+
+1. Import the workflow JSON files into your N8N instance
+2. Update the backend URLs in each workflow to point to your HackaVerse deployment
+3. Activate the workflows
+4. Configure any additional parameters (e.g., judge email addresses)
+
+## Environment Variables
+
+The workflows use configurable backend URLs. You can set these in the workflow parameters or use environment variables:
+
+- `BACKEND_URL`: Base URL of your HackaVerse backend (e.g., https://ai-agent-x2iw.onrender.com)
+
+## Testing
+
+To test the workflows:
+
+1. Start your HackaVerse backend
+2. Activate the workflows in N8N
+3. Send test payloads to the webhook endpoints
+4. Verify that data is properly forwarded to the backend
+
+Example test for team registration:
+```bash
+curl -X POST http://localhost:5678/webhook/hackaverse/registration \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "Test Team",
+    "members": ["Alice", "Bob"],
+    "project_title": "Test Project"
+  }'
+```
+
+## Integration with HackaVerse
+
+The workflows integrate with the following HackaVerse endpoints:
+
+- `/admin/webhook/hackaverse/registration` - Team registration
+- `/agent` - Agent prompts
+- `/admin/submissions` - Submission retrieval (for judging)
+
+All workflows are designed to be modular and can be extended or modified as needed.
