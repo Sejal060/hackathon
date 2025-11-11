@@ -47,9 +47,9 @@ async def get_agent(input: str = Query(..., description="Input text for the agen
 async def post_agent(request: AgentRequest):
     # This is a placeholder - actual implementation would be in main.py
     return AgentResponse(
-        processed_input=f"Processed {request.team_id}",
+        processed_input=f"Processed {request.team_id}: {request.prompt}",
         action="placeholder_action",
-        result=f"Processed submission from {request.team_id}",
+        result=f"Processed prompt from {request.team_id}",
         reward=0.0
     )
 

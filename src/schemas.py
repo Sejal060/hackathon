@@ -3,7 +3,7 @@ from typing import List, Optional
 
 class AgentRequest(BaseModel):
     team_id: str = Field(..., examples=["team_42"])
-    submission_url: str = Field(..., examples=["https://.../project.zip"])
+    prompt: str = Field(..., examples=["How to build a REST API?"])  # Changed from submission_url to prompt
 
 class RewardRequest(BaseModel):
     team_id: str
