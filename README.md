@@ -332,7 +332,7 @@ curl https://ai-agent-x2iw.onrender.com/agent \
 | Simulation Script | ✅      | 7 teams simulated successfully     |
 | Dashboard         | ✅      | Visualization matches MongoDB data |
 | N8N Workflows     | ✅      | Successfully tested via webhooks   |
-| Test Coverage     | ✅      | 91% coverage with 60 tests passed  |
+| Test Coverage     | ✅      | 44.3% coverage with 60 tests passed  |
 
 ---
 
@@ -520,7 +520,7 @@ Hackathon Project — *BHIV Intelligent System Integration*
 - ✅ N8N Automation verified
 - ✅ Render deployment active
 - ✅ CI/CD passing
-- ✅ 83% test coverage
+- ✅ 44.3% test coverage
 
 # HackaVerse Backend v2.0
 

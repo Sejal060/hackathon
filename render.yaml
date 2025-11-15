@@ -10,7 +10,10 @@ services:
       - key: BHIV_BUCKET_DIR
         value: "./data/bucket"
       - key: MONGO_URI
-        value: "mongodb://localhost:27017"
+        fromService:
+          name: mongodb
+          property: connectionString
+          envVarKey: MONGO_URI
       - key: BUCKET_DB_NAME
         value: "bhiv_db"
 

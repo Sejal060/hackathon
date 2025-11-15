@@ -34,7 +34,7 @@ def final_verification():
             
             # Check tags
             tags = [tag['name'] for tag in openapi_spec.get('tags', [])]
-            expected_tags = ['agent', 'reward', 'logs']
+            expected_tags = ['agent', 'admin', 'system']
             if all(tag in tags for tag in expected_tags):
                 print(f"✅ All expected tags present: {tags}")
             else:
@@ -52,7 +52,7 @@ def final_verification():
             # Check if AgentRequest has examples
             if 'properties' in agent_request_schema:
                 team_id_prop = agent_request_schema['properties'].get('team_id', {})
-                submission_url_prop = agent_request_schema['properties'].get('submission_url', {})
+                submission_url_prop = agent_request_schema['properties'].get('prompt', {})
                 
                 # Check for examples in properties
                 team_id_examples = team_id_prop.get('examples', [])
@@ -61,7 +61,7 @@ def final_verification():
                 if team_id_examples and submission_url_examples:
                     print(f"✅ AgentRequest schema has examples:")
                     print(f"   - team_id: {team_id_examples}")
-                    print(f"   - submission_url: {submission_url_examples}")
+                    print(f"   - prompt: {submission_url_examples}")
                 else:
                     print("⚠️  AgentRequest schema missing examples in properties")
             
