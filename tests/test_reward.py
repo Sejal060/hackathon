@@ -5,6 +5,7 @@ Unit tests for the reward system
 import unittest
 import sys
 import os
+from unittest.mock import patch, MagicMock
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -69,6 +70,70 @@ class TestRewardSystem(unittest.TestCase):
         # Should return a reward based on single step
         self.assertEqual(reward_value, 1.0)
         self.assertIn("1", feedback)
+    
+    @patch('src.reward.send_to_core')
+    def test_calculate_reward_with_core_communication_success(self, mock_send_to_core):
+        """Test reward calculation with successful core communication"""
+        # Mock successful core communication
+        mock_send_to_core.return_value = {"status": "success", "message": "Reward sent"}
+        
+        action = "step1 | step2"
+        outcome = "success"
+        
+        reward_value, feedback = self.reward_system.calculate_reward(action, outcome)
+        
+        # Should return a positive reward
+        self.assertGreater(reward_value, 0)
+        # Should have called send_to_core
+        mock_send_to_core.assert_called_once()
+    
+    @patch('src.reward.send_to_core')
+    def test_calculate_reward_with_core_communication_failure(self, mock_send_to_core):
+        """Test reward calculation with failed core communication"""
+        # Mock failed core communication
+        mock_send_to_core.side_effect = Exception("Connection failed")
+        
+        action = "step1 | step2"
+        outcome = "success"
+        
+        reward_value, feedback = self.reward_system.calculate_reward(action, outcome)
+        
+        # Should still return a positive reward
+        self.assertGreater(reward_value, 0)
+        # Should have called send_to_core
+        mock_send_to_core.assert_called_once()
+    
+    @patch('src.reward.save_to_bucket')
+    def test_calculate_reward_with_bucket_save_success(self, mock_save_to_bucket):
+        """Test reward calculation with successful bucket save"""
+        # Mock successful bucket save
+        mock_save_to_bucket.return_value = "/path/to/saved/reward.json"
+        
+        action = "step1 | step2"
+        outcome = "success"
+        
+        reward_value, feedback = self.reward_system.calculate_reward(action, outcome)
+        
+        # Should return a positive reward
+        self.assertGreater(reward_value, 0)
+        # Should have called save_to_bucket
+        mock_save_to_bucket.assert_called_once()
+    
+    @patch('src.reward.save_to_bucket')
+    def test_calculate_reward_with_bucket_save_failure(self, mock_save_to_bucket):
+        """Test reward calculation with failed bucket save"""
+        # Mock failed bucket save
+        mock_save_to_bucket.side_effect = Exception("Save failed")
+        
+        action = "step1 | step2"
+        outcome = "success"
+        
+        reward_value, feedback = self.reward_system.calculate_reward(action, outcome)
+        
+        # Should still return a positive reward
+        self.assertGreater(reward_value, 0)
+        # Should have called save_to_bucket
+        mock_save_to_bucket.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()

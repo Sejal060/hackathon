@@ -13,7 +13,7 @@ from unittest.mock import patch, MagicMock
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from storage_service import StorageService
+from src.storage_service import StorageService
 
 class TestStorageService(unittest.TestCase):
     """Test cases for the StorageService class"""
@@ -94,7 +94,7 @@ class TestStorageService(unittest.TestCase):
         
         # Assert
         self.assertIsNotNone(latest_submission)
-        self.assertEqual(latest_submission["project_title"], "Second Project")
+        self.assertEqual(latest_submission["project_title"], "Second Project")  # type: ignore
     
     def test_list_submissions_for_team(self):
         """Test listing submissions for a specific team"""
@@ -115,7 +115,7 @@ class TestStorageService(unittest.TestCase):
         # Assert
         self.assertEqual(len(submissions), 2)
         # Check that both submissions are in the list
-        titles = [self._read_file_title(sub["path"]) for sub in submissions]
+        titles = [self._read_file_title(sub["path"]) for sub in submissions]  # type: ignore
         self.assertIn("First Project", titles)
         self.assertIn("Second Project", titles)
     
@@ -138,7 +138,7 @@ class TestStorageService(unittest.TestCase):
         # Assert
         self.assertGreaterEqual(len(all_submissions), 2)
         # Check that submissions from both teams are in the list
-        team_ids = [sub["team_id"] for sub in all_submissions]
+        team_ids = [sub["team_id"] for sub in all_submissions]  # type: ignore
         self.assertIn("team_alpha", team_ids)
         self.assertIn("team_beta", team_ids)
     
