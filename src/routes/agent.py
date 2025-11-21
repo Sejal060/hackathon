@@ -6,7 +6,7 @@ from ..reward import RewardSystem
 from datetime import datetime
 from ..bucket_connector import relay_to_bucket
 from ..logger import ksml_logger
-from ..main import get_api_key
+from ..auth import get_api_key
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
