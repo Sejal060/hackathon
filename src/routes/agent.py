@@ -1,15 +1,16 @@
 # src/routes/agent.py
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from ..models import AgentRequest, AgentResponse
 from ..mcp_router import route_mcp
 from ..reward import RewardSystem
 from datetime import datetime
 from ..bucket_connector import relay_to_bucket
 from ..logger import ksml_logger
+from ..main import get_api_key
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
-@router.post("/", response_model=AgentResponse, summary="Process agent requests")
+@router.post("/", response_model=AgentResponse, summary="Process agent requests", dependencies=[Depends(get_api_key)])
 def agent_endpoint(request: AgentRequest):
     """
     Process agent requests and generate responses.

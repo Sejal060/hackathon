@@ -8,12 +8,35 @@ Local: http://127.0.0.1:8001
 Deployed: https://ai-agent-x2iw.onrender.com
 
 ## Authentication
-No authentication required for current endpoints.
+API Key authentication is required for protected endpoints. Include the `X-API-Key` header with your requests.
+
+**Example:**
+```bash
+curl -X POST https://ai-agent-x2iw.onrender.com/agent/ \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
+  -d '{"team_id":"team_42","prompt":"How to build a REST API?","metadata":{}}'
+```
+
+Protected endpoints:
+- All `/agent/*` endpoints
+- All `/admin/*` endpoints except webhooks
+
+Public endpoints (no authentication required):
+- `/system/health`
+- `/ping`
+- `/`
+
+## CORS Configuration
+CORS is configured based on environment variables:
+- Development: Allows all origins (`*`)
+- Production: Restricted to specific domains defined in `ALLOWED_ORIGINS`
 
 ## Error Handling
 The API uses standard HTTP status codes:
 - 200: Success
 - 400: Bad Request
+- 401: Unauthorized (missing or invalid API key)
 - 422: Validation Error
 - 500: Internal Server Error
 
@@ -55,6 +78,7 @@ Process agent requests and generate responses.
 ```bash
 curl -X POST https://ai-agent-x2iw.onrender.com/agent/ \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
   -d '{"team_id":"team_42","prompt":"How to build a REST API?","metadata":{}}'
 ```
 
@@ -83,6 +107,7 @@ Calculate and apply rewards based on request outcomes.
 ```bash
 curl -X POST https://ai-agent-x2iw.onrender.com/admin/reward \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
   -d '{"request_id":"req_123","outcome":"success"}'
 ```
 
@@ -111,6 +136,7 @@ Relay logs to the BHIV Bucket for storage and analysis.
 ```bash
 curl -X POST https://ai-agent-x2iw.onrender.com/admin/logs \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
   -d '{"timestamp":"2025-01-01T12:00:00Z","level":"INFO","message":"Team submitted project"}'
 ```
 
@@ -138,6 +164,7 @@ Register a new team for the hackathon.
 ```bash
 curl -X POST https://ai-agent-x2iw.onrender.com/admin/register \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
   -d '{"team_name":"Innovators","members":["Alice","Bob"],"project_title":"AI Assistant"}'
 ```
 
@@ -291,8 +318,9 @@ curl https://ai-agent-x2iw.onrender.com/
 ### For Frontend Developers
 1. All endpoints return JSON responses
 2. Use `Content-Type: application/json` for POST requests
-3. Handle HTTP error status codes appropriately
-4. The `/docs` endpoint provides interactive API documentation
+3. Include `X-API-Key` header for protected endpoints
+4. Handle HTTP error status codes appropriately
+5. The `/docs` endpoint provides interactive API documentation
 
 ### For Backend Integration
 1. The API is deployed on Render at https://ai-agent-x2iw.onrender.com

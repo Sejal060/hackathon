@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 import logging
@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 # Import modular agent modules
 from src.input_handler import InputHandler
@@ -99,14 +101,42 @@ app = FastAPI(
     openapi_tags=tags_metadata
 )
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Replace with app.gurukul-ai.in in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Configure CORS with environment-specific settings
+# In development, allow all origins
+# In production, restrict to specific domains
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+if "*" in allowed_origins:
+    # Development mode - allow all origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Production mode - restrict to specific origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+# API Key authentication
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def get_api_key(api_key_header: str = Depends(api_key_header)):
+    """Validate API key for protected endpoints"""
+    if api_key_header == os.getenv("API_KEY"):
+        return api_key_header
+    else:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API Key",
+        )
 
 # Include routers
 from .routes.agent import router as agent_router

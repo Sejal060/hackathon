@@ -1,14 +1,15 @@
 # src/routes/admin.py
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from ..models import RewardRequest, RewardResponse, LogRequest, TeamRegistration
 from ..bucket_connector import relay_to_bucket
 from ..reward import RewardSystem
 from datetime import datetime
 from ..logger import ksml_logger
+from ..main import get_api_key
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-@router.post("/reward", response_model=RewardResponse, summary="Apply reward to a request")
+@router.post("/reward", response_model=RewardResponse, summary="Apply reward to a request", dependencies=[Depends(get_api_key)])
 def reward_endpoint(request: RewardRequest):
     """
     Calculate and apply rewards based on request outcome.
@@ -25,7 +26,7 @@ def reward_endpoint(request: RewardRequest):
     
     return RewardResponse(reward_value=reward_value, feedback=feedback)
 
-@router.post("/logs", summary="Relay logs to bucket")
+@router.post("/logs", summary="Relay logs to bucket", dependencies=[Depends(get_api_key)])
 def logs_endpoint(request: LogRequest):
     """
     Relay logs to the BHIV Bucket.
@@ -40,7 +41,7 @@ def logs_endpoint(request: LogRequest):
     result = relay_to_bucket(log_data)
     return {"status": "logged", "result": result}
 
-@router.post("/register", summary="Register a new team")
+@router.post("/register", summary="Register a new team", dependencies=[Depends(get_api_key)])
 def register_endpoint(team: TeamRegistration):
     """
     Register a new team for the hackathon.
