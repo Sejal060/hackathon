@@ -1,6 +1,0 @@
-{
-  "action": "Process input: demo -> Take general action",
-  "result": "Executed: Process input: demo | Executed: Take general action",
-  "timestamp": 1762250871.2705836,
-  "steps_count": 2
-}

@@ -1,6 +1,0 @@
-{
-  "action": "Process input: explain FastAPI -> Take general action | Context: location=unknown, priority=normal",
-  "result": "Executed: Process input: explain FastAPI | Executed: Take general action | Context: location=unknown, priority=normal",
-  "timestamp": 1761683974.412194,
-  "steps_count": 2
-}

@@ -1,8 +1,0 @@
-{
-  "action": "Executed: Process input: explain fastapi | Executed: Take general action | Context: location=unknown, priority=normal",
-  "outcome": null,
-  "reward": 3,
-  "feedback": "Reward based on 3 executed step(s)",
-  "timestamp": 1761684090.7800305,
-  "steps_count": 3
-}

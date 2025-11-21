@@ -1,8 +1,0 @@
-{
-  "action": "step1 | step2",
-  "outcome": "failure",
-  "reward": 1.0,
-  "feedback": "Failure: 2 step(s) with negative outcome",
-  "timestamp": 1762251787.623685,
-  "steps_count": 2
-}

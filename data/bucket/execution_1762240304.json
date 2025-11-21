@@ -1,6 +1,0 @@
-{
-  "action": "Process input: hello world -> Take general action | Context: location=unknown, priority=normal",
-  "result": "Executed: Process input: hello world | Executed: Take general action | Context: location=unknown, priority=normal",
-  "timestamp": 1762240289.4451294,
-  "steps_count": 2
-}

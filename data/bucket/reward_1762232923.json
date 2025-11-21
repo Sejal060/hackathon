@@ -1,8 +1,0 @@
-{
-  "action": "Executed: Process input: hello | Executed: Take general action",
-  "outcome": null,
-  "reward": 2,
-  "feedback": "Reward based on 2 executed step(s)",
-  "timestamp": 1762232908.4188755,
-  "steps_count": 2
-}

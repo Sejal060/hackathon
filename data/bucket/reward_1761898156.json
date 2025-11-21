@@ -1,8 +1,0 @@
-{
-  "action": "Executed: Process input: plan a project | Executed: Take general action",
-  "outcome": null,
-  "reward": 2,
-  "feedback": "Reward based on 2 executed step(s)",
-  "timestamp": 1761898141.354432,
-  "steps_count": 2
-}

@@ -1,6 +1,0 @@
-{
-  "action": "Process input: test logging flow -> Take general action | Context: location=unknown, priority=normal",
-  "result": "Executed: Process input: test logging flow | Executed: Take general action | Context: location=unknown, priority=normal",
-  "timestamp": 1762240379.4899416,
-  "steps_count": 2
-}

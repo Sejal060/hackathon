@@ -1,6 +1,0 @@
-{
-  "action": "Process input: test prompt -> Take general action",
-  "result": "Executed: Process input: test prompt | Executed: Take general action",
-  "timestamp": 1762253118.81802,
-  "steps_count": 2
-}
