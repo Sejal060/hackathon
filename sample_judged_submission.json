@@ -1,0 +1,14 @@
+{
+  "team_id": "team_123",
+  "submission_text": "Project Title: AI-Powered Mental Health Companion\n\nOverview:\nOur project is an AI-powered mental health companion that uses natural language processing to provide personalized support to users experiencing stress, anxiety, or depression. The system uses a combination of sentiment analysis, conversational AI, and evidence-based therapeutic techniques to engage users in meaningful conversations.\n\nTechnical Implementation:\n- Built with Python and FastAPI for the backend\n- Uses OpenAI's GPT-3.5 for conversational AI\n- Implements sentiment analysis using TextBlob\n- Stores user interactions in MongoDB\n- Frontend built with React and Tailwind CSS\n- Deployed on Render with CI/CD pipeline\n\nKey Features:\n1. Personalized conversation flows based on user mood\n2. Crisis detection and escalation to human counselors\n3. Mood tracking and progress visualization\n4. Guided meditation and breathing exercises\n5. Resource recommendations based on user needs\n\nInnovation:\nUnlike existing mental health apps, our system focuses on building a genuine emotional connection through AI, using advanced NLP to understand context and emotional undertones in user messages. We also integrate with local mental health resources for seamless referrals.",
+  "judge_result": {
+    "clarity": 25,
+    "quality": 20,
+    "innovation": 35,
+    "total_score": 70.0,
+    "confidence": 0.92,
+    "trace": "Mock evaluation due to missing API key",
+    "team_id": "team_123"
+  },
+  "timestamp": "2025-11-22T17:30:00.123456"
+}

@@ -1,14 +1,18 @@
 # src/routes/agent.py
 from fastapi import APIRouter, Depends
-from ..models import AgentRequest, AgentResponse
+from ..models import AgentRequest, AgentResponse, JudgeRequest, JudgeResponse
 from ..mcp_router import route_mcp
 from ..reward import RewardSystem
+from ..judging_engine import JudgingEngine
 from datetime import datetime
 from ..bucket_connector import relay_to_bucket
 from ..logger import ksml_logger
 from ..auth import get_api_key
 
 router = APIRouter(prefix="/agent", tags=["agent"])
+
+# Initialize the judging engine
+judging_engine = JudgingEngine()
 
 @router.post("/", response_model=AgentResponse, summary="Process agent requests", dependencies=[Depends(get_api_key)])
 def agent_endpoint(request: AgentRequest):
@@ -27,6 +31,35 @@ def agent_endpoint(request: AgentRequest):
     # Calculate reward using the reward system
     reward_system = RewardSystem()
     reward_value, feedback = reward_system.calculate_reward(result.get("action", ""), "success")
+    
+    # Evaluate the result with the judging engine
+    try:
+        judge_result = judging_engine.evaluate(result.get("result", ""), request.team_id)
+        
+        # Store judge score in MongoDB
+        judge_data = {
+            "team_id": request.team_id,
+            "submission_text": result.get("result", ""),
+            "judge_result": judge_result,
+            "timestamp": datetime.now().isoformat()
+        }
+        relay_to_bucket(judge_data)
+        
+        # Log the judging result
+        ksml_logger.log_event(
+            intent="judging_evaluation",
+            actor="judging_engine",
+            context=f"Judging evaluation completed for team {request.team_id}",
+            outcome="success",
+            additional_data={"total_score": judge_result["total_score"]}
+        )
+    except Exception as e:
+        ksml_logger.log_event(
+            intent="judging_evaluation",
+            actor="judging_engine",
+            context=f"Judging evaluation failed for team {request.team_id}: {str(e)}",
+            outcome="error"
+        )
     
     # Log the agent response
     ksml_logger.log_agent_response(request.team_id, result)

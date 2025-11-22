@@ -1,0 +1,65 @@
+HACKAVERSE AI JUDGING ENGINE - INTEGRATION INSTRUCTIONS FOR YASH
+==================================================================
+
+Sejal has completed the backend AI Judging Engine. Here's what you need to know for frontend integration:
+
+NEW ENDPOINT AVAILABLE:
+----------------------
+POST /judge
+- Accepts submission_text and team_id
+- Returns structured scoring with rubric, total score, confidence, and reasoning
+
+ENDPOINT DETAILS:
+-----------------
+URL: http://127.0.0.1:8001/judge (for local testing)
+Method: POST
+Headers: Content-Type: application/json
+Body:
+{
+  "submission_text": "Full text of the submission to evaluate",
+  "team_id": "team_identifier"
+}
+
+RESPONSE FORMAT:
+----------------
+{
+  "clarity": 25,
+  "quality": 20,
+  "innovation": 35,
+  "total_score": 70.0,
+  "confidence": 0.92,
+  "trace": "Detailed reasoning from the AI judge",
+  "team_id": "team_identifier"
+}
+
+INTEGRATION STEPS:
+------------------
+1. Create a new "/judge" route in your frontend
+2. Add a form with:
+   - Textarea for submission input
+   - Button to trigger AI judging
+3. On button click:
+   - Send POST request to /judge endpoint
+   - Display the returned scores and reasoning
+4. Style the results in a clear, readable format
+
+SAMPLE PAYLOAD:
+---------------
+See file: test_judge_payload.json
+
+SAMPLE RESPONSE:
+----------------
+See file: sample_judged_submission.json
+
+TESTING:
+--------
+1. Start the backend: uvicorn src.main:app --reload --port 8001
+2. Access docs at: http://127.0.0.1:8001/docs
+3. Test the /judge endpoint with the sample payload
+
+DEPENDENCIES:
+-------------
+No additional frontend dependencies needed.
+All existing integration patterns apply.
+
+For any questions, refer to the existing codebase patterns or contact Sejal.

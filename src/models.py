@@ -38,4 +38,17 @@ class LogEntry(BaseModel):
     level: str
     message: str
 
+class JudgeRequest(BaseModel):
+    submission_text: str
+    team_id: Optional[str] = None
+
+class JudgeResponse(BaseModel):
+    clarity: int
+    quality: int
+    innovation: int
+    total_score: float
+    confidence: float
+    trace: str
+    team_id: Optional[str] = None
+
 # Add more as needed
