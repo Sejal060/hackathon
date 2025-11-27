@@ -18,6 +18,9 @@ from src.reward import RewardSystem
 # Load environment variables
 load_dotenv()
 
+# Configure MongoDB
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/hackaverse")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
