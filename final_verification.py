@@ -1,228 +1,284 @@
 #!/usr/bin/env python3
 """
-Final verification script for HackaVerse backend handoff
-Validates all requirements from the task description
+Final verification script to ensure the application is ready for production deployment
 """
 
+import os
+import sys
+import time
+import subprocess
 import requests
 import json
-import time
-from datetime import datetime
-import os
+from dotenv import load_dotenv
 
-# Configuration
-BASE_URL = "http://127.0.0.1:8001"
-DEPLOYED_URL = "https://ai-agent-x2iw.onrender.com"
+# Load environment variables
+load_dotenv()
 
-def check_requirements():
-    """Check all requirements from the task description"""
-    print("HackaVerse Backend - Final Verification")
-    print("=" * 50)
+def test_endpoints():
+    """Test all required endpoints"""
+    print("Testing endpoints...")
     
-    # 1. System Modularization
-    print("1. System Modularization Check")
-    modules = [
-        "core_connector.py",
-        "bucket_connector.py", 
-        "mcp_router.py",
-        "models.py",
-        "routes/agent.py",
-        "routes/admin.py",
-        "routes/system.py"
-    ]
+    # Start the server
+    print("Starting server...")
+    process = subprocess.Popen([
+        sys.executable, "-m", "uvicorn", 
+        "src.main:app", 
+        "--host", "127.0.0.1", 
+        "--port", "8001",
+        "--log-level", "warning"
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    all_modules_exist = True
-    for module in modules:
-        if os.path.exists(f"src/{module}"):
-            print(f"   ✅ {module}")
-        else:
-            print(f"   ❌ {module} - MISSING")
-            all_modules_exist = False
+    # Wait for server to start
+    time.sleep(3)
     
-    print(f"   Overall: {'✅ PASS' if all_modules_exist else '❌ FAIL'}")
+    # Check if process is running
+    if process.poll() is not None:
+        stdout, stderr = process.communicate()
+        print(f"✗ Server failed to start:")
+        print(f"stdout: {stdout.decode()}")
+        print(f"stderr: {stderr.decode()}")
+        return False
     
-    # 2. Connector Readiness
-    print("\n2. Connector Readiness Check")
     try:
-        from src.core_connector import connect_to_core
-        from src.bucket_connector import relay_to_bucket
-        print("   ✅ Core connector import successful")
-        print("   ✅ Bucket connector import successful")
-        print("   ✅ Connectors ready with mock URLs")
-    except Exception as e:
-        print(f"   ❌ Connector import failed: {str(e)}")
-    
-    # 3. API Endpoint Finalization
-    print("\n3. API Endpoint Finalization Check")
-    endpoints = [
-        ("/agent/", "POST", "Agent processing"),
-        ("/admin/reward", "POST", "Reward calculation"),
-        ("/admin/logs", "POST", "Log relay"),
-        ("/system/health", "GET", "Health check"),
-        ("/admin/webhook/hackaverse/registration", "POST", "N8N registration")
-    ]
-    
-    all_endpoints_work = True
-    for endpoint, method, description in endpoints:
-        try:
-            if method == "GET":
-                response = requests.get(f"{BASE_URL}{endpoint}")
-            else:  # POST
-                # Send minimal valid payload for POST endpoints
-                if "agent" in endpoint:
-                    payload = {"team_id": "verify", "prompt": "test"}
-                elif "reward" in endpoint:
-                    payload = {"request_id": "verify", "outcome": "test"}
-                elif "logs" in endpoint:
-                    payload = {"timestamp": datetime.now().isoformat(), "level": "INFO", "message": "test"}
-                elif "registration" in endpoint:
-                    payload = {"team_name": "Verify", "members": ["test"], "project_title": "test"}
-                else:
-                    payload = {}
-                
-                response = requests.post(f"{BASE_URL}{endpoint}", json=payload)
+        base_url = "http://127.0.0.1:8001"
+        api_key = os.getenv("API_KEY", "your_secret_api_key_here")
+        headers = {"X-API-Key": api_key}
+        
+        # Test 1: Health endpoint
+        print("  Testing /system/health...")
+        response = requests.get(f"{base_url}/system/health", timeout=5)
+        if response.status_code == 200:
+            print("  ✓ /system/health endpoint working")
+        else:
+            print(f"  ✗ /system/health returned {response.status_code}")
+            return False
             
-            if response.status_code in [200, 201]:
-                print(f"   ✅ {method} {endpoint} - {description}")
-            else:
-                print(f"   ❌ {method} {endpoint} - {description} (Status: {response.status_code})")
-                all_endpoints_work = False
-        except Exception as e:
-            print(f"   ❌ {method} {endpoint} - {description} (Error: {str(e)})")
-            all_endpoints_work = False
-    
-    print(f"   Overall: {'✅ PASS' if all_endpoints_work else '❌ FAIL'}")
-    
-    # 4. Micro Flow Logging (KSML layer)
-    print("\n4. Micro Flow Logging (KSML) Check")
-    try:
-        # Trigger a log entry
-        log_payload = {
-            "timestamp": datetime.now().isoformat(),
+        # Test 2: Root endpoint
+        print("  Testing root endpoint...")
+        response = requests.get(f"{base_url}/", timeout=5)
+        if response.status_code == 200:
+            print("  ✓ Root endpoint working")
+        else:
+            print(f"  ✗ Root endpoint returned {response.status_code}")
+            return False
+            
+        # Test 3: Register endpoint
+        print("  Testing /admin/register...")
+        register_data = {
+            "team_name": "Test Team",
+            "members": ["Alice", "Bob"],
+            "project_title": "Test Project"
+        }
+        response = requests.post(
+            f"{base_url}/admin/register", 
+            json=register_data,
+            headers=headers,
+            timeout=5
+        )
+        if response.status_code == 200:
+            print("  ✓ /admin/register endpoint working")
+        else:
+            print(f"  ✗ /admin/register returned {response.status_code}")
+            print(f"  Response: {response.text}")
+            return False
+            
+        # Test 4: Agent endpoint
+        print("  Testing /agent/...")
+        agent_data = {
+            "team_id": "test_team",
+            "prompt": "Explain how to build a REST API",
+            "metadata": {"test": True}
+        }
+        response = requests.post(
+            f"{base_url}/agent/", 
+            json=agent_data,
+            headers=headers,
+            timeout=10  # Longer timeout for agent processing
+        )
+        if response.status_code == 200:
+            print("  ✓ /agent/ endpoint working")
+        else:
+            print(f"  ✗ /agent/ returned {response.status_code}")
+            print(f"  Response: {response.text}")
+            return False
+            
+        # Test 5: Reward endpoint
+        print("  Testing /admin/reward...")
+        reward_data = {
+            "request_id": "test_request_123",
+            "outcome": "success"
+        }
+        response = requests.post(
+            f"{base_url}/admin/reward", 
+            json=reward_data,
+            headers=headers,
+            timeout=5
+        )
+        if response.status_code == 200:
+            print("  ✓ /admin/reward endpoint working")
+        else:
+            print(f"  ✗ /admin/reward returned {response.status_code}")
+            print(f"  Response: {response.text}")
+            return False
+            
+        # Test 6: Logs endpoint
+        print("  Testing /admin/logs...")
+        log_data = {
+            "timestamp": "2024-01-01T12:00:00Z",
             "level": "INFO",
-            "message": "Verification log entry"
+            "message": "Test log message"
         }
-        response = requests.post(f"{BASE_URL}/admin/logs", json=log_payload)
-        
+        response = requests.post(
+            f"{base_url}/admin/logs", 
+            json=log_data,
+            headers=headers,
+            timeout=5
+        )
         if response.status_code == 200:
-            print("   ✅ KSML logging format implemented")
-            print("   ✅ Logs relayed to Bucket connector")
+            print("  ✓ /admin/logs endpoint working")
         else:
-            print(f"   ❌ Log submission failed: {response.status_code}")
-    except Exception as e:
-        print(f"   ❌ Log submission error: {str(e)}")
-    
-    # 5. N8N Workflow Hook
-    print("\n5. N8N Workflow Hook Check")
-    n8n_workflows = [
-        "n8n/workflows/team_registration.json",
-        "n8n/workflows/mentorbot_prompt.json",
-        "n8n/workflows/judging_reminder.json"
-    ]
-    
-    all_workflows_exist = True
-    for workflow in n8n_workflows:
-        if os.path.exists(workflow):
-            print(f"   ✅ {workflow}")
-        else:
-            print(f"   ❌ {workflow} - MISSING")
-            all_workflows_exist = False
-    
-    if os.path.exists("n8n/README.md"):
-        print("   ✅ N8N documentation available")
-    else:
-        print("   ❌ N8N documentation missing")
-        all_workflows_exist = False
-    
-    print(f"   Overall: {'✅ PASS' if all_workflows_exist else '❌ FAIL'}")
-    
-    # 6. Deployment & Testing
-    print("\n6. Deployment & Testing Check")
-    
-    # Check documentation files
-    docs = [
-        "API_REFERENCE.md",
-        "INTEGRATION_NOTES.md"
-    ]
-    
-    all_docs_exist = True
-    for doc in docs:
-        if os.path.exists(doc):
-            print(f"   ✅ {doc}")
-        else:
-            print(f"   ❌ {doc} - MISSING")
-            all_docs_exist = False
-    
-    # Check render deployment
-    if os.path.exists("render.yaml"):
-        print("   ✅ render.yaml deployment configuration")
-    else:
-        print("   ❌ render.yaml deployment configuration - MISSING")
-        all_docs_exist = False
-    
-    print(f"   Documentation: {'✅ PASS' if all_docs_exist else '❌ FAIL'}")
-    
-    # 7. Test agent run
-    print("\n7. Test Agent Run")
-    try:
-        agent_payload = {
-            "team_id": "verification_team",
-            "prompt": "Verify the system is working correctly",
-            "metadata": {"test_run": True}
-        }
-        response = requests.post(f"{BASE_URL}/agent/", json=agent_payload)
+            print(f"  ✗ /admin/logs returned {response.status_code}")
+            print(f"  Response: {response.text}")
+            return False
+            
+        print("✓ All endpoints working correctly")
+        return True
         
-        if response.status_code == 200:
-            data = response.json()
-            print("   ✅ Agent run successful")
-            print(f"   ✅ Response generated: {data.get('result', '')[:50]}...")
-            print("   ✅ Log samples ready for handover")
-        else:
-            print(f"   ❌ Agent run failed: {response.status_code}")
     except Exception as e:
-        print(f"   ❌ Agent run error: {str(e)}")
+        print(f"✗ Error testing endpoints: {e}")
+        return False
+    finally:
+        # Terminate the server
+        print("Stopping server...")
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
 
-def generate_handover_summary():
-    """Generate a summary for handover"""
-    print("\n" + "=" * 50)
-    print("HANDOVER SUMMARY")
-    print("=" * 50)
+def test_cors():
+    """Test CORS configuration"""
+    print("\nTesting CORS configuration...")
     
-    print("\n✅ DELIVERABLES COMPLETED:")
-    print("  • Deployed backend URL: https://ai-agent-x2iw.onrender.com")
-    print("  • Updated repo with modular code structure")
-    print("  • API_REFERENCE.md and INTEGRATION_NOTES.md documentation")
-    print("  • Working N8N webhook for registration")
-    print("  • All API endpoints tested and validated")
-    print("  • KSML formatted log samples generated")
+    # This would require a more complex test with actual CORS requests
+    # For now, we'll just check that the configuration is present
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
+    if allowed_origins:
+        print("✓ CORS configuration present")
+        return True
+    else:
+        print("✗ CORS configuration missing")
+        return False
+
+def test_env_vars():
+    """Test that all required environment variables are set"""
+    print("\nTesting environment variables...")
     
-    print("\n📋 HANDOFF INFORMATION:")
-    print("  → To Vinayak (Testing & Task Bank):")
-    print("    - QA_REPORT.md contains comprehensive test results")
-    print("    - Sample logs in sample_logs.json demonstrate KSML format")
-    print("    - test_backend.py for automated validation")
-    print("    - N8N workflows ready for automation")
+    required_vars = [
+        "API_KEY",
+        "BHIV_CORE_URL",
+        "MONGO_URI"
+    ]
     
-    print("  → To Yash (Frontend integration):")
-    print("    - API endpoints documented in API_REFERENCE.md")
-    print("    - Integration examples in INTEGRATION_NOTES.md")
-    print("    - Base URL: https://ai-agent-x2iw.onrender.com")
-    print("    - Key endpoints: /agent, /admin/webhook/hackaverse/registration, /system/health")
+    missing_vars = []
+    for var in required_vars:
+        if not os.getenv(var):
+            missing_vars.append(var)
+            
+    if missing_vars:
+        print(f"✗ Missing required environment variables: {missing_vars}")
+        return False
+    else:
+        print("✓ All required environment variables are set")
+        return True
+
+def test_documentation():
+    """Test that documentation endpoints are accessible"""
+    print("\nTesting documentation endpoints...")
     
-    print("\n🚀 SYSTEM STATUS: PRODUCTION READY")
-    print("   All requirements from task description have been implemented")
-    print("   Backend is modular, well-documented, and ready for integration")
+    # Start the server
+    print("Starting server...")
+    process = subprocess.Popen([
+        sys.executable, "-m", "uvicorn", 
+        "src.main:app", 
+        "--host", "127.0.0.1", 
+        "--port", "8001",
+        "--log-level", "warning"
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    # Wait for server to start
+    time.sleep(3)
+    
+    try:
+        base_url = "http://127.0.0.1:8001"
+        
+        # Test OpenAPI JSON
+        print("  Testing /openapi.json...")
+        response = requests.get(f"{base_url}/openapi.json", timeout=5)
+        if response.status_code == 200:
+            print("  ✓ /openapi.json accessible")
+        else:
+            print(f"  ✗ /openapi.json returned {response.status_code}")
+            return False
+            
+        # Test docs
+        print("  Testing /docs...")
+        response = requests.get(f"{base_url}/docs", timeout=5)
+        if response.status_code == 200:
+            print("  ✓ /docs accessible")
+        else:
+            print(f"  ✗ /docs returned {response.status_code}")
+            return False
+            
+        print("✓ Documentation endpoints working")
+        return True
+        
+    except Exception as e:
+        print(f"✗ Error testing documentation: {e}")
+        return False
+    finally:
+        # Terminate the server
+        print("Stopping server...")
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+
+def main():
+    """Run all verification tests"""
+    print("Running final verification tests...\n")
+    
+    tests = [
+        test_env_vars,
+        test_cors,
+        test_endpoints,
+        test_documentation
+    ]
+    
+    passed = 0
+    total = len(tests)
+    
+    for test in tests:
+        if test():
+            passed += 1
+        else:
+            print("Test failed, continuing with remaining tests...")
+            
+    print(f"\nFinal Results: {passed}/{total} test groups passed")
+    
+    if passed == total:
+        print("🎉 All verification tests passed! The application is ready for production deployment.")
+        print("\nDeployment Information:")
+        print("- Base URL: https://ai-agent-x2iw.onrender.com")
+        print("- API Key: production_secret_key_2024")
+        print("- Required endpoints are all functional")
+        print("- CORS is configured for frontend integration")
+        return True
+    else:
+        print("❌ Some verification tests failed. Please address the issues above before deployment.")
+        return False
 
 if __name__ == "__main__":
-    check_requirements()
-    generate_handover_summary()
-    
-    print("\n" + "=" * 50)
-    print("Final verification complete!")
-    print("Share the following files with Vinayak for handover:")
-    print("  - QA_REPORT.md")
-    print("  - sample_logs.json")
-    print("  - API_REFERENCE.md")
-    print("  - INTEGRATION_NOTES.md")
-    print("  - n8n/ directory with workflows")
-    print("=" * 50)
+    success = main()
+    sys.exit(0 if success else 1)

@@ -122,16 +122,22 @@ else:
         allow_headers=["*"],
     )
 
+# Add security middleware
+from .middleware import SecurityMiddleware
+app.add_middleware(SecurityMiddleware)
+
 # Include routers
 from .routes.agent import router as agent_router
 from .routes.admin import router as admin_router
 from .routes.system import router as system_router
 from .routes.judge import router as judge_router
+from .routes.workflows import router as workflows_router
 
 app.include_router(agent_router)
 app.include_router(admin_router)
 app.include_router(system_router)
 app.include_router(judge_router)
+app.include_router(workflows_router)
 
 # Global error handlers
 @app.exception_handler(RequestValidationError)

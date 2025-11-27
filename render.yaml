@@ -17,9 +17,11 @@ services:
       - key: BUCKET_DB_NAME
         value: "bhiv_db"
       - key: API_KEY
-        value: "your_production_api_key_here"
+        value: "production_secret_key_2024"
       - key: OPENAI_API_KEY
-        value: "your_openai_api_key_here"
+        value: "sk-placeholder-openai-key"
+      - key: ALLOWED_ORIGINS
+        value: "*"
 
   - type: pserv
     name: mongodb

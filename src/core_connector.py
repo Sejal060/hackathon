@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Get BHIV Core URL from environment variables with fallback
-BHIV_CORE_URL = os.getenv("BHIV_CORE_URL", "http://localhost:8002/process")
+BHIV_CORE_URL = os.getenv("BHIV_CORE_URL", "http://localhost:8002/reason")
 
 def connect_to_core(payload: Dict[str, Any]) -> Dict[str, Any]:
     """

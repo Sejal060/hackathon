@@ -1,7 +1,6 @@
 # src/routes/judge.py
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from typing import Optional
+from ..models import JudgeRequest, JudgeResponse
 from ..judging_engine import JudgingEngine
 from ..logger import ksml_logger
 from ..auth import get_api_key
@@ -12,20 +11,6 @@ logger = logging.getLogger(__name__)
 
 # Define the judge router
 router = APIRouter(prefix="/judge", tags=["judge"])
-
-# Define request and response models
-class JudgeRequest(BaseModel):
-    submission_text: str
-    team_id: Optional[str] = None
-
-class JudgeResponse(BaseModel):
-    clarity: int
-    quality: int
-    innovation: int
-    total_score: float
-    confidence: float
-    trace: str
-    team_id: Optional[str] = None
 
 # Initialize the judging engine
 judging_engine = JudgingEngine()

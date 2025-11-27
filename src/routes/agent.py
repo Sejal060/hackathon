@@ -1,6 +1,6 @@
 # src/routes/agent.py
 from fastapi import APIRouter, Depends
-from ..models import AgentRequest, AgentResponse, JudgeRequest, JudgeResponse
+from ..models import AgentRequest, AgentResponse
 from ..mcp_router import route_mcp
 from ..reward import RewardSystem
 from ..judging_engine import JudgingEngine
