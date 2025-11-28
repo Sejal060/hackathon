@@ -247,6 +247,95 @@ Root endpoint with API information.
 curl https://ai-agent-x2iw.onrender.com/
 ```
 
+### Judge Endpoints
+
+#### POST /judge/score
+Scores a single submission using the AI Judging Engine.
+
+**Request Body:**
+```json
+{
+  "submission_text": "string",
+  "team_id": "string (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "clarity": 0,
+  "quality": 0,
+  "innovation": 0,
+  "total_score": 0.0,
+  "confidence": 0.0,
+  "trace": "string",
+  "team_id": "string (optional)"
+}
+```
+
+**Example:**
+```bash
+curl -X POST https://ai-agent-x2iw.onrender.com/judge/score \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
+  -d '{"submission_text":"Project Title: AI Assistant...","team_id":"team_123"}'
+```
+
+#### POST /judge/submit
+Saves and scores a submission using the AI Judging Engine.
+
+**Request Body:**
+```json
+{
+  "submission_text": "string",
+  "team_id": "string (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "submission": {
+    "text": "string",
+    "team_id": "string (optional)"
+  },
+  "judging_result": {
+    "clarity": 0,
+    "quality": 0,
+    "innovation": 0,
+    "total_score": 0.0,
+    "confidence": 0.0,
+    "trace": "string",
+    "team_id": "string (optional)"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST https://ai-agent-x2iw.onrender.com/judge/submit \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_secret_api_key_here" \
+  -d '{"submission_text":"Project Title: AI Assistant...","team_id":"team_123"}'
+```
+
+#### GET /judge/rubric
+Returns the judging criteria used by the AI Judging Engine.
+
+**Response:**
+```json
+{
+  "clarity": "How clear and well-structured is the submission?",
+  "quality": "How technically sound and well-implemented is the solution?",
+  "innovation": "How creative and novel is the approach?"
+}
+```
+
+**Example:**
+```bash
+curl https://ai-agent-x2iw.onrender.com/judge/rubric
+```
+
 ## Data Models
 
 ### AgentRequest
@@ -310,6 +399,27 @@ curl https://ai-agent-x2iw.onrender.com/
   "timestamp": "string",
   "level": "string",
   "message": "string"
+}
+```
+
+### JudgeRequest
+```json
+{
+  "submission_text": "string",
+  "team_id": "string (optional)"
+}
+```
+
+### JudgeResponse
+```json
+{
+  "clarity": 0,
+  "quality": 0,
+  "innovation": 0,
+  "total_score": 0.0,
+  "confidence": 0.0,
+  "trace": "string",
+  "team_id": "string (optional)"
 }
 ```
 

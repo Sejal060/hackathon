@@ -182,3 +182,35 @@ class JudgingEngine:
         
         logger.info(f"Evaluation completed for team {team_id}: {result['total_score']}")
         return result
+
+
+def evaluate_submission(payload: dict) -> dict:
+    """
+    Public function to evaluate a submission payload.
+    
+    Args:
+        payload: Dictionary containing submission_text and optional team_id
+        
+    Returns:
+        Dictionary with overall_score, criteria, and feedback
+    """
+    # Initialize the judging engine
+    engine = JudgingEngine()
+    
+    # Extract data from payload
+    submission_text = payload.get("submission_text", "")
+    team_id = payload.get("team_id")
+    
+    # Evaluate the submission
+    result = engine.evaluate(submission_text, team_id)
+    
+    # Format the response as requested
+    return {
+        "overall_score": result["total_score"],
+        "criteria": {
+            "clarity": result["clarity"],
+            "quality": result["quality"],
+            "innovation": result["innovation"]
+        },
+        "feedback": result["trace"]
+    }
