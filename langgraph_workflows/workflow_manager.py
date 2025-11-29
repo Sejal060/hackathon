@@ -132,6 +132,33 @@ class WorkflowManager:
         """
         return self.run_workflow(WorkflowType.MENTORBOT_PROMPT, mentor_data)
     
+    def run_workflow_by_name(self, name: str, payload: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Unified function to run a workflow by name
+        
+        Args:
+            name: Name of the workflow to run ("judge", "mentor", etc.)
+            payload: Data to pass to the workflow
+            
+        Returns:
+            Dictionary with workflow result
+        """
+        workflow_mapping = {
+            "judge": WorkflowType.JUDGING_REMINDER,
+            "mentor": WorkflowType.MENTORBOT_PROMPT,
+            "team_registration": WorkflowType.TEAM_REGISTRATION
+        }
+        
+        if name not in workflow_mapping:
+            return {
+                "status": "error",
+                "message": f"Unsupported workflow name: {name}",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        workflow_type = workflow_mapping[name]
+        return self.run_workflow(workflow_type, payload)
+    
     def get_execution_log(self) -> List[Dict[str, Any]]:
         """
         Get the execution log of all workflows
@@ -192,6 +219,11 @@ if __name__ == "__main__":
     # Example 3: Judging reminder
     print("\n=== Judging Reminder Workflow ===")
     result = manager.run_judging_reminder()
+    print(json.dumps(result, indent=2))
+    
+    # Example 4: Run workflow by name
+    print("\n=== Run Workflow by Name (Judge) ===")
+    result = manager.run_workflow_by_name("judge")
     print(json.dumps(result, indent=2))
     
     # Show execution log

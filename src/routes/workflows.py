@@ -36,6 +36,13 @@ class MentorBotRequest(BaseModel):
     prompt: str
     metadata: Optional[Dict[str, Any]] = {}
 
+class WorkflowRunRequest(BaseModel):
+    name: str
+    payload: Optional[Dict[str, Any]] = {}
+
+class WorkflowListResponse(BaseModel):
+    workflows: List[str]
+
 class WorkflowResponse(BaseModel):
     status: str
     workflow_type: str
@@ -136,6 +143,46 @@ def run_judging_reminder_workflow(
             status_code=500,
             detail=f"Failed to run judging reminder workflow: {str(e)}"
         )
+
+@router.post("/run", response_model=WorkflowResponse, summary="Run workflow by name")
+def run_workflow(
+    request: WorkflowRunRequest,
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Run a workflow by name.
+    
+    - **name**: Name of the workflow to run ("judge", "mentor", etc.)
+    - **payload**: Data to pass to the workflow (optional)
+    """
+    check_langgraph_availability()
+    
+    try:
+        result = workflow_manager.run_workflow_by_name(request.name, request.payload)
+        return WorkflowResponse(
+            status=result["status"],
+            workflow_type=result.get("workflow_type", "unknown"),
+            message=result.get("message"),
+            result=result.get("execution_record", {}).get("result") if "execution_record" in result else result.get("result"),
+            timestamp=result["timestamp"]
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to run workflow: {str(e)}"
+        )
+
+@router.get("/list", response_model=WorkflowListResponse, summary="List available workflows")
+def list_workflows(
+    api_key: str = Depends(get_api_key)
+):
+    """
+    List all available workflows.
+    """
+    check_langgraph_availability()
+    
+    workflows = ["judge", "mentor", "team_registration"]
+    return WorkflowListResponse(workflows=workflows)
 
 @router.get("/execution-log", response_model=ExecutionLogResponse, summary="Get workflow execution log")
 def get_workflow_execution_log(
