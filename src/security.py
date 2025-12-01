@@ -32,6 +32,7 @@ class SecurityManager:
         
         self.secret_key = secret_key.encode('utf-8')
         self.ledger = []  # In-memory ledger (in production, this would be a persistent store)
+        self.used_nonces = set()  # Track used nonces to prevent replay attacks
         
     def generate_nonce(self) -> str:
         """
@@ -42,7 +43,32 @@ class SecurityManager:
         """
         # Generate a random 32-byte nonce
         nonce_bytes = secrets.token_bytes(32)
-        return base64.b64encode(nonce_bytes).decode('utf-8')
+        nonce = base64.b64encode(nonce_bytes).decode('utf-8')
+        return nonce
+    
+    def verify_nonce(self, nonce: str) -> bool:
+        """
+        Verify that a nonce is valid and hasn't been used before
+        This function marks the nonce as used if it's valid.
+        
+        Args:
+            nonce: Nonce to verify
+            
+        Returns:
+            True if nonce is valid and unused, False otherwise
+        """
+        # Check if nonce has already been used (prevent replay attacks)
+        if nonce in self.used_nonces:
+            return False
+            
+        # Try to decode the nonce to verify it's valid base64
+        try:
+            base64.b64decode(nonce.encode('utf-8'))
+            # Mark nonce as used
+            self.used_nonces.add(nonce)
+            return True
+        except Exception:
+            return False
     
     def generate_timestamp(self) -> int:
         """
@@ -53,7 +79,7 @@ class SecurityManager:
         """
         return int(time.time())
     
-    def create_signature(self, data: Dict[str, Any], nonce: str, timestamp: int) -> str:
+    def sign_payload(self, data: Dict[str, Any], nonce: str, timestamp: int) -> str:
         """
         Create a signature for the data using HMAC-SHA256
         
@@ -95,7 +121,7 @@ class SecurityManager:
             provided_signature = base64.b64decode(signature.encode('utf-8'))
             
             # Create the expected signature
-            expected_signature = self.create_signature(data, nonce, timestamp)
+            expected_signature = self.sign_payload(data, nonce, timestamp)
             expected_signature_bytes = base64.b64decode(expected_signature.encode('utf-8'))
             
             # Use hmac.compare_digest for timing-attack resistant comparison
@@ -255,7 +281,7 @@ if __name__ == "__main__":
     timestamp = sec_manager.generate_timestamp()
     
     # Create signature
-    signature = sec_manager.create_signature(data, nonce, timestamp)
+    signature = sec_manager.sign_payload(data, nonce, timestamp)
     
     # Verify signature
     is_valid = sec_manager.verify_signature(data, nonce, timestamp, signature)

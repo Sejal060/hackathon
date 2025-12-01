@@ -6,6 +6,7 @@ Provides explicit and robust storage operations using BHIV bucket connector
 import json
 import time
 import os
+import hashlib
 from typing import Dict, List, Any, Optional
 from src.integrations.bhiv_connectors import save_to_bucket
 
@@ -14,7 +15,22 @@ class StorageService:
     
     def __init__(self):
         """Initialize storage service"""
-        pass
+        self.transaction_ledger = []  # For ledger chaining of transactions
+        self.last_transaction_hash = None  # Hash of the last transaction for chaining
+    
+    def _calculate_hash(self, data: Dict[str, Any]) -> str:
+        """
+        Calculate SHA256 hash of transaction data
+        
+        Args:
+            data: Transaction data to hash
+            
+        Returns:
+            SHA256 hash as hex string
+        """
+        # Create canonical representation of data
+        canonical_data = json.dumps(data, sort_keys=True, separators=(',', ':'))
+        return hashlib.sha256(canonical_data.encode('utf-8')).hexdigest()
     
     def save_submission(self, team_id: str, submission_data: Dict[str, Any]) -> Dict[str, str]:
         """
@@ -30,6 +46,22 @@ class StorageService:
         timestamp = int(time.time())
         filename = f"submission_{team_id}_{timestamp}.json"
         path = save_to_bucket(submission_data, filename)
+        
+        # Add transaction to ledger with chaining
+        transaction_record = {
+            "id": f"txn_{len(self.transaction_ledger) + 1}",
+            "timestamp": timestamp,
+            "action": "save_submission",
+            "team_id": team_id,
+            "filename": filename,
+            "previous_hash": self.last_transaction_hash
+        }
+        
+        # Calculate hash for this transaction
+        transaction_record["hash"] = self._calculate_hash(transaction_record)
+        self.last_transaction_hash = transaction_record["hash"]
+        self.transaction_ledger.append(transaction_record)
+        
         return {"path": path, "filename": filename}
     
     def get_submission(self, team_id: str, timestamp: Optional[int] = None) -> Optional[Dict[str, Any]]:
@@ -137,3 +169,41 @@ class StorageService:
         # Sort by timestamp (newest first)
         submissions.sort(key=lambda x: x["timestamp"], reverse=True)
         return submissions
+    
+    def get_transaction_ledger(self) -> List[Dict[str, Any]]:
+        """
+        Get the transaction ledger with chaining
+        
+        Returns:
+            List of transaction records with hash chaining
+        """
+        return self.transaction_ledger.copy()
+    
+    def verify_transaction_ledger_integrity(self) -> bool:
+        """
+        Verify the integrity of the transaction ledger using hash chaining
+        
+        Returns:
+            True if ledger is valid, False otherwise
+        """
+        if not self.transaction_ledger:
+            return True  # Empty ledger is valid
+            
+        previous_hash = None
+        for transaction in self.transaction_ledger:
+            # Verify the hash of the current transaction
+            transaction_copy = transaction.copy()
+            if "hash" in transaction_copy:
+                del transaction_copy["hash"]
+                
+            calculated_hash = self._calculate_hash(transaction_copy)
+            if calculated_hash != transaction["hash"]:
+                return False
+                
+            # Verify the chain (previous_hash should match the hash of the previous transaction)
+            if transaction["previous_hash"] != previous_hash:
+                return False
+                
+            previous_hash = transaction["hash"]
+            
+        return True

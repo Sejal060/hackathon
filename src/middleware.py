@@ -97,6 +97,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid timestamp format")
         
+        # Verify nonce
+        if not security_manager.verify_nonce(nonce):
+            raise HTTPException(status_code=400, detail="Invalid or reused nonce")
+        
         # Get request body for signature verification
         if request.method in ["POST", "PUT", "PATCH"]:
             body = await request.body()

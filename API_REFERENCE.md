@@ -10,11 +10,19 @@ Deployed: https://ai-agent-x2iw.onrender.com
 ## Authentication
 API Key authentication is required for protected endpoints. Include the `X-API-Key` header with your requests.
 
+For enhanced security, administrative endpoints require additional security headers:
+- `X-Nonce`: A unique nonce to prevent replay attacks
+- `X-Timestamp`: Unix timestamp of the request (must be within 5 minutes)
+- `X-Signature`: HMAC-SHA256 signature of the request payload
+
 **Example:**
 ```bash
 curl -X POST https://ai-agent-x2iw.onrender.com/agent/ \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your_secret_api_key_here" \
+  -H "X-Nonce: base64_encoded_nonce" \
+  -H "X-Timestamp: 1700000000" \
+  -H "X-Signature: base64_encoded_signature" \
   -d '{"team_id":"team_42","prompt":"How to build a REST API?","metadata":{}}'
 ```
 
@@ -442,3 +450,11 @@ curl https://ai-agent-x2iw.onrender.com/judge/rubric
 1. Use `/admin/webhook/hackaverse/registration` for team registration automation
 2. All webhook responses include status information
 3. Failed requests are logged for debugging
+
+### Security Features
+
+#### Nonce and Signature Verification
+All administrative endpoints implement nonce and signature verification to prevent replay attacks and ensure request integrity.
+
+#### Ledger Chaining
+All storage operations are recorded in a ledger with hash chaining to ensure data integrity and provide an audit trail.
