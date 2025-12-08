@@ -15,6 +15,9 @@ from src.reasoning import ReasoningModule
 from src.executor import Executor
 from src.reward import RewardSystem
 
+# Import database module
+from .database import connect_to_db, close_db
+
 # Load environment variables
 load_dotenv()
 
@@ -101,6 +104,14 @@ app = FastAPI(
     openapi_url="/openapi.json",
     openapi_tags=tags_metadata
 )
+
+@app.on_event("startup")
+async def startup_event():
+    connect_to_db()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    close_db()
 
 # Configure CORS with environment-specific settings
 # In development, allow all origins

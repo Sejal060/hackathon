@@ -1,10 +1,13 @@
-from pymongo import MongoClient
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# Import database helper
+from src.database import connect_to_db, get_db
 
 # Connect to MongoDB
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-client = MongoClient(MONGO_URI)
-db = client["bhiv_db"]
+connect_to_db()
+db = get_db()
 
 # Check for KSML formatted logs (they should have intent, actor, context, outcome fields)
 try:

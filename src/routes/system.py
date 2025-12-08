@@ -5,6 +5,7 @@ import platform
 import sys
 import time
 from ..logger import ksml_logger
+from ..database import get_db
 
 router = APIRouter(prefix="/system", tags=["system"])
 
@@ -32,3 +33,16 @@ def health_endpoint():
         "uptime": f"{uptime:.2f} seconds",
         "version": "v3"
     }
+
+@router.get("/test-db", summary="Test database connection")
+def test_db():
+    """
+    Test database connection and list collections.
+    
+    Returns:
+    - **collections**: List of collections in the database
+    """
+    db = get_db()
+    # Example: list collections
+    collections = db.list_collection_names()
+    return {"collections": collections}
