@@ -108,7 +108,7 @@ def demo_system():
     print("\nTo see the full system in action:")
     print("1. Start the backend: uvicorn src.main:app --reload --port 8001")
     print("2. Run this demo script again")
-    print("3. Check MongoDB for KSML formatted logs in bhiv_db.logs")
+    print("3. Check MongoDB for KSML formatted logs in blackholeinifverse60_db_user.logs")
 
 if __name__ == "__main__":
     demo_system()

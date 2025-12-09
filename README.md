@@ -179,7 +179,7 @@ Then open **MongoDB Compass** and connect:
 mongodb://localhost:27017
 ```
 
-You should see a database named **bhiv_db**.
+You should see a database named **blackholeinifverse60_db_user**.
 
 ---
 
@@ -215,7 +215,7 @@ Open Swagger UI:
 ✅ Expected:
 
 * Returns a success message
-* New logs appear in MongoDB (`bhiv_db.logs`)
+* New logs appear in MongoDB (`blackholeinifverse60_db_user.logs`)
 
 ---
 
@@ -327,7 +327,7 @@ curl https://ai-agent-x2iw.onrender.com/agent \
 
 | Component         | Status | Verification                       |
 | ----------------- | ------ | ---------------------------------- |
-| MongoDB           | ✅      | `bhiv_db` visible with logs        |
+| MongoDB           | ✅      | `blackholeinifverse60_db_user` visible with logs        |
 | FastAPI Backend   | ✅      | `/register` and `/agent` working   |
 | Simulation Script | ✅      | 7 teams simulated successfully     |
 | Dashboard         | ✅      | Visualization matches MongoDB data |

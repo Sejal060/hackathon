@@ -72,7 +72,7 @@ https://ai-agent-x2iw.onrender.com
 API_KEY=production_secret_key_2024
 BHIV_CORE_URL=https://placeholder-core-url.com
 MONGO_URI=mongodb://mongodb:27017
-BUCKET_DB_NAME=bhiv_db
+BUCKET_DB_NAME=blackholeinifverse60_db_user
 OPENAI_API_KEY=sk-placeholder-openai-key
 ALLOWED_ORIGINS=*
 ```

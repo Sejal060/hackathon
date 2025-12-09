@@ -153,12 +153,12 @@ class SecurityManager:
         
         # Add previous entry hash for chaining
         if self.ledger:
-            entry["previous_hash"] = self._hash_ledger_entry(self.ledger[-1])
+            entry["previous_hash"] = self._hash_ledger_entry(self.ledger[-1], include_hash=False)
         else:
             entry["previous_hash"] = None
             
         # Add entry hash
-        entry["entry_hash"] = self._hash_ledger_entry(entry)
+        entry["entry_hash"] = self._hash_ledger_entry(entry, include_hash=False)
         
         return entry
     
@@ -198,7 +198,7 @@ class SecurityManager:
             # Verify chain integrity
             if i > 0:
                 previous_entry = self.ledger[i-1]
-                expected_previous_hash = self._hash_ledger_entry(previous_entry)
+                expected_previous_hash = self._hash_ledger_entry(previous_entry, include_hash=False)
                 if entry["previous_hash"] != expected_previous_hash:
                     return False
                     

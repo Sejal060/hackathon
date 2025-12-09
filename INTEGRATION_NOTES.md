@@ -71,7 +71,7 @@ fetch('https://ai-agent-x2iw.onrender.com/system/health')
 - **Function**: `relay_to_bucket(log_data)`
 - **Environment Variables**: 
   - `MONGO_URI` (default: mongodb://localhost:27017)
-  - `BUCKET_DB_NAME` (default: bhiv_db)
+  - `BUCKET_DB_NAME` (default: blackholeinifverse60_db_user)
 - **Fallback**: File-based logging if MongoDB is unavailable
 
 ### Micro Flow Logging (KSML Layer)
@@ -95,7 +95,7 @@ All major operations are logged with structured data:
 ## Environment Variables
 - `MONGO_URI`: MongoDB connection string (default: mongodb://localhost:27017)
 - `BHIV_CORE_URL`: Core service URL (default: http://localhost:8002/process)
-- `BUCKET_DB_NAME`: MongoDB database name (default: bhiv_db)
+- `BUCKET_DB_NAME`: MongoDB database name (default: blackholeinifverse60_db_user)
 
 ## Deployment Notes
 - **Render URL**: https://ai-agent-x2iw.onrender.com

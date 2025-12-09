@@ -15,7 +15,7 @@ services:
           property: connectionString
           envVarKey: MONGO_URI
       - key: BUCKET_DB_NAME
-        value: "bhiv_db"
+        value: "blackholeinifverse60_db_user"
       - key: API_KEY
         value: "production_secret_key_2024"
       - key: OPENAI_API_KEY

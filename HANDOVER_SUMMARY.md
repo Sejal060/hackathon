@@ -145,7 +145,7 @@ For any questions or issues with the handoff:
 To verify the system is working correctly after deployment:
 1. Check the health endpoint: `GET /system/health`
 2. Test agent processing: `POST /agent/` with sample payload
-3. Verify logs are stored in MongoDB: `bhiv_db.logs` collection
+3. Verify logs are stored in MongoDB: `blackholeinifverse60_db_user.logs` collection
 4. Test N8N webhook integration
 
 ---

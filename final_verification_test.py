@@ -80,7 +80,7 @@ def test_security_manager():
     
     # Test signature creation and verification
     data = {"test": "data", "timestamp": timestamp}
-    signature = security_manager.create_signature(data, nonce, timestamp)
+    signature = security_manager.sign_payload(data, nonce, timestamp)
     assert isinstance(signature, str)
     
     # Verify signature

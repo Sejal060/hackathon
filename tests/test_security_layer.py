@@ -40,26 +40,32 @@ def test_ledger_chaining():
     security_manager.ledger = []
     security_manager.used_nonces = set()
     
+    # Use the same timestamp for both entries to ensure consistent hashing
+    timestamp = int(time.time())
+    
     # Add first entry
     data1 = {"team_id": "team123", "action": "submit"}
     nonce1 = security_manager.generate_nonce()
-    timestamp1 = int(time.time())
-    signature1 = security_manager.sign_payload(data1, nonce1, timestamp1)
-    entry1 = security_manager.add_to_ledger(data1, nonce1, timestamp1, signature1)
+    signature1 = security_manager.sign_payload(data1, nonce1, timestamp)
+    entry1 = security_manager.add_to_ledger(data1, nonce1, timestamp, signature1)
     
     # Add second entry
     data2 = {"team_id": "team456", "action": "register"}
     nonce2 = security_manager.generate_nonce()
-    timestamp2 = int(time.time())
-    signature2 = security_manager.sign_payload(data2, nonce2, timestamp2)
-    entry2 = security_manager.add_to_ledger(data2, nonce2, timestamp2, signature2)
+    signature2 = security_manager.sign_payload(data2, nonce2, timestamp)
+    entry2 = security_manager.add_to_ledger(data2, nonce2, timestamp, signature2)
+    
+    # Get the actual entries from the ledger after both have been added
+    ledger_entries = security_manager.get_ledger()
+    actual_entry1 = ledger_entries[0]
+    actual_entry2 = ledger_entries[1]
     
     # Verify ledger integrity
     assert security_manager.verify_ledger_integrity() == True
     
     # Verify chaining
-    assert entry1["previous_hash"] == None
-    assert entry2["previous_hash"] == entry1["entry_hash"]
+    assert actual_entry1["previous_hash"] == None
+    assert actual_entry2["previous_hash"] == actual_entry1["entry_hash"]
 
 def test_security_middleware_headers():
     """Test that security middleware requires proper headers"""

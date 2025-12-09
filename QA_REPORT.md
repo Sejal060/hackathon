@@ -36,7 +36,7 @@ This report provides a comprehensive quality assurance assessment of the HackaVe
 #### Logging System (KSML)
 - ✅ **Structured Format**: All logs follow KSML format
 - ✅ **Comprehensive Coverage**: Logs all major operations
-- ✅ **MongoDB Integration**: Logs stored in bhiv_db.logs
+- ✅ **MongoDB Integration**: Logs stored in blackholeinifverse60_db_user.logs
 - ✅ **Fallback Mechanism**: File-based logging if MongoDB unavailable
 
 #### Connectors
@@ -147,7 +147,7 @@ To verify the system is working correctly:
    ```
 
 4. **Verify logs in MongoDB**:
-   - Database: `bhiv_db`
+   - Database: `blackholeinifverse60_db_user`
    - Collection: `logs`
    - Check for KSML formatted entries
 

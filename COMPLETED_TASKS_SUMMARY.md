@@ -29,7 +29,7 @@ This document summarizes all the tasks completed to transform the HackaVerse bac
 **Environment Variables**:
 - `BHIV_CORE_URL` - Configurable Core endpoint (default: http://localhost:8002/process)
 - `MONGO_URI` - MongoDB connection string (default: mongodb://localhost:27017)
-- `BUCKET_DB_NAME` - Database name (default: bhiv_db)
+- `BUCKET_DB_NAME` - Database name (default: blackholeinifverse60_db_user)
 
 ### 3. ✅ API Endpoint Finalization
 **Requirement**: Finalize all required endpoints with proper documentation
