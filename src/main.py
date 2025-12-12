@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from .schemas.response import APIResponse
 
 # Import modular agent modules
 from src.input_handler import InputHandler
@@ -157,28 +158,29 @@ app.include_router(system_router)
 app.include_router(judge_router)
 app.include_router(workflows_router)
 
-# Global error handlers
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    log_action(f"Validation error: {exc}", level="ERROR")
-    return JSONResponse({"detail": str(exc)}, status_code=422)
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    log_action(f"Unexpected error: {exc}", level="ERROR")
-    return JSONResponse({"detail": "Internal Server Error"}, status_code=500)
+# Register error handler
+from .middleware_handlers.error_handler import api_exception_handler
+app.add_exception_handler(Exception, api_exception_handler)
 
 # Root endpoint
 @app.get("/", summary="Root endpoint")
 def root():
     log_action("Root endpoint called")
-    return {"message": "FastAPI is running 🚀", "docs": "/docs"}
+    return APIResponse(
+        success=True,
+        message="FastAPI is running 🚀",
+        data={"docs": "/docs"}
+    )
 
 # Ping endpoint
 @app.get("/ping", summary="Basic health check")
 def ping():
     log_action("Ping endpoint called")
-    return {"status": "ok"}
+    return APIResponse(
+        success=True,
+        message="Service is alive",
+        data=None
+    )
 
 # Endpoint definitions have been moved to the new route modules
 # See src/routes/agent.py, src/routes/admin.py, and src/routes/system.py

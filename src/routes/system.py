@@ -6,47 +6,66 @@ import sys
 import time
 from ..logger import ksml_logger
 from ..database import get_db
+from ..schemas.response import APIResponse
 
 router = APIRouter(prefix="/system", tags=["system"])
 
 # Track application start time for uptime calculation
 START_TIME = time.time()
 
+def get_uptime():
+    """Calculate and return application uptime"""
+    return time.time() - START_TIME
+
 @router.get("/health", summary="Check system health")
-def health_endpoint():
+async def health():
     """
     Check system health and return status information.
     
     Returns:
-    - **status**: Current system status
-    - **uptime**: Application uptime in seconds
-    - **version**: API version
+    - **success**: Boolean indicating success
+    - **message**: Status message
+    - **data**: Contains uptime and version
     """
     # Calculate uptime
-    uptime = time.time() - START_TIME
+    uptime = get_uptime()
+    version = "v3"
     
     # Log the health check using KSML
     ksml_logger.log_system_health("ok")
     
-    return {
-        "status": "ok",
-        "uptime": f"{uptime:.2f} seconds",
-        "version": "v3"
-    }
+    return APIResponse(
+        success=True,
+        message="System is healthy",
+        data={
+            "uptime": f"{uptime:.2f} seconds",
+            "version": version
+        }
+    )
 
 @router.get("/test-db", summary="Test database connection")
-def test_db():
+async def test_db():
     """
     Test database connection and list collections.
     
     Returns:
-    - **collections**: List of collections in the database
+    - **success**: Boolean indicating success
+    - **message**: Status message
+    - **data**: Contains list of collections
     """
     db = get_db()
     # Example: list collections
     collections = db.list_collection_names()
-    return {"collections": collections}
+    return APIResponse(
+        success=True,
+        message="Database connection successful",
+        data={"collections": collections}
+    )
 
 @router.get("/ready")
-async def readiness_check():
-    return {"status": "ready"}
+async def readiness():
+    return APIResponse(
+        success=True,
+        message="Service is ready",
+        data=None
+    )

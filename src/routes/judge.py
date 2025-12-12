@@ -4,6 +4,7 @@ from ..models import JudgeRequest, JudgeResponse
 from ..judging_engine import JudgingEngine, evaluate_submission
 from ..logger import ksml_logger
 from ..auth import get_api_key
+from ..schemas.response import APIResponse
 from typing import Dict, Any
 import logging
 
@@ -92,21 +93,25 @@ def submit_and_score(request: JudgeRequest):
     )
     
     # Return the structured response with both submission and judging results
-    return {
-        "submission": {
-            "text": request.submission_text,
-            "team_id": request.team_id
-        },
-        "judging_result": {
-            "clarity": result["clarity"],
-            "quality": result["quality"],
-            "innovation": result["innovation"],
-            "total_score": result["total_score"],
-            "confidence": result["confidence"],
-            "trace": result["trace"],
-            "team_id": result["team_id"]
+    return APIResponse(
+        success=True,
+        message="Submission saved and scored successfully",
+        data={
+            "submission": {
+                "text": request.submission_text,
+                "team_id": request.team_id
+            },
+            "judging_result": {
+                "clarity": result["clarity"],
+                "quality": result["quality"],
+                "innovation": result["innovation"],
+                "total_score": result["total_score"],
+                "confidence": result["confidence"],
+                "trace": result["trace"],
+                "team_id": result["team_id"]
+            }
         }
-    }
+    )
 
 @router.get("/rubric", response_model=Dict[str, str], summary="Returns judging criteria")
 def get_rubric():
@@ -116,4 +121,9 @@ def get_rubric():
     logger.info("Rubric endpoint called")
     
     # Return the rubric
-    return judging_engine.rubric
+    rubric_data = judging_engine.rubric
+    return APIResponse(
+        success=True,
+        message="Judging criteria retrieved successfully",
+        data=rubric_data
+    )

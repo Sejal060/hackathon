@@ -6,6 +6,7 @@ from ..reward import RewardSystem
 from datetime import datetime
 from ..logger import ksml_logger
 from ..auth import get_api_key
+from ..schemas.response import APIResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -39,7 +40,11 @@ def logs_endpoint(request: LogRequest):
     # Convert Pydantic model to dict for relay_to_bucket
     log_data = request.dict()
     result = relay_to_bucket(log_data)
-    return {"status": "logged", "result": result}
+    return APIResponse(
+        success=True,
+        message="Logs relayed successfully",
+        data={"status": "logged", "result": result}
+    )
 
 @router.post("/register", summary="Register a new team", dependencies=[Depends(get_api_key)])
 def register_endpoint(team: TeamRegistration):
@@ -53,7 +58,11 @@ def register_endpoint(team: TeamRegistration):
     # Log the registration using KSML
     ksml_logger.log_registration(team.team_name, team.project_title)
     
-    return {"message": "Team registered successfully", "team_id": f"team_{team.team_name.lower().replace(' ', '_')}"}
+    return APIResponse(
+        success=True,
+        message="Team registered successfully",
+        data={"team_id": f"team_{team.team_name.lower().replace(' ', '_')}"}
+    )
 
 @router.post("/webhook/hackaverse/registration", summary="N8N webhook for team registration")
 def webhook_registration(payload: TeamRegistration):
@@ -68,4 +77,8 @@ def webhook_registration(payload: TeamRegistration):
     ksml_logger.log_registration(payload.team_name, payload.project_title)
     
     # Add registration logic if needed
-    return {"status": "registered", "team_id": f"team_{payload.team_name.lower().replace(' ', '_')}"}
+    return APIResponse(
+        success=True,
+        message="Team registered via webhook",
+        data={"status": "registered", "team_id": f"team_{payload.team_name.lower().replace(' ', '_')}"}
+    )
