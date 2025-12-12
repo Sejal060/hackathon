@@ -1,15 +1,15 @@
-# src/database.py
 import os
 from pymongo import MongoClient
+import time
 
 # MONGO_URI will be read from environment variables when connect_to_db is called
 
 client = None
 db = None
 
-def connect_to_db():
+def connect_to_db_with_retry(retries=5, delay=2):
     """
-    Create a global MongoDB client & select the default database.
+    Create a global MongoDB client with retry logic & select the default database.
     Call this on app startup.
     """
     global client, db
@@ -18,18 +18,35 @@ def connect_to_db():
     if not MONGO_URI:
         raise RuntimeError("MONGO_URI is not set in environment variables")
 
-    if client is None:
-        # Create client
-        _client = MongoClient(MONGO_URI)
+    for i in range(retries):
+        try:
+            # Create client with connection pooling and timeout settings
+            _client = MongoClient(MONGO_URI, maxPoolSize=20, serverSelectionTimeoutMS=5000)
+            # Test the connection
+            _client.admin.command('ping')
+            
+            # Choose a database name – you can change 'hackathon' to anything you like
+            _db = _client["hackathon"]
 
-        # Choose a database name – you can change 'hackathon' to anything you like
-        _db = _client["hackathon"]
+            # Assign to globals
+            globals()["client"] = _client
+            globals()["db"] = _db
+            
+            print("✅ Connected to MongoDB Atlas")
+            return _client
+        except Exception as e:
+            print(f"DB connection failed (attempt {i+1}/{retries}), retrying...")
+            if i < retries - 1:  # Don't sleep on the last attempt
+                time.sleep(delay)
+    
+    raise Exception("Could not connect to MongoDB after retries")
 
-        # Assign to globals
-        globals()["client"] = _client
-        globals()["db"] = _db
-
-        print("✅ Connected to MongoDB Atlas")
+def connect_to_db():
+    """
+    Create a global MongoDB client & select the default database.
+    Call this on app startup.
+    """
+    return connect_to_db_with_retry()
 
 def get_db():
     """

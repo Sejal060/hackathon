@@ -46,3 +46,7 @@ def test_db():
     # Example: list collections
     collections = db.list_collection_names()
     return {"collections": collections}
+
+@router.get("/ready")
+async def readiness_check():
+    return {"status": "ready"}

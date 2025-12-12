@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 import logging
 import os
+import time
 from datetime import datetime
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +17,7 @@ from src.executor import Executor
 from src.reward import RewardSystem
 
 # Import database module
-from .database import connect_to_db, close_db
+from .database import connect_to_db_with_retry, close_db
 
 # Load environment variables
 load_dotenv()
@@ -85,7 +86,7 @@ tags_metadata = [
     },
     {
         "name": "admin",
-        "description": "Administrative operations including rewards, logs, and registration",
+        "description": "Administrative operations including rewards, logs and registration",
     },
     {
         "name": "system",
@@ -97,7 +98,7 @@ tags_metadata = [
 app = FastAPI(
     title="HackaVerse API",
     description="Hackathon engine — agent /reward /logs",
-    version="v2.0",
+    version="v3.0",
     contact={"name": "Sejal & Team", "email": "youremail@example.com"},
     docs_url="/docs",
     redoc_url="/redoc",
@@ -107,7 +108,10 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup_event():
-    connect_to_db()
+    # Add startup delay to ensure MongoDB is ready
+    time.sleep(2)
+    # Connect to database with retry logic
+    connect_to_db_with_retry(retries=5, delay=2)
 
 @app.on_event("shutdown")
 async def shutdown_event():

@@ -13,14 +13,6 @@ logger = logging.getLogger(__name__)
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 BUCKET_DB_NAME = os.getenv("BUCKET_DB_NAME", "blackholeinifverse60_db_user")
 
-# Get database connection
-db = None
-try:
-    db = get_db()
-    logger.info(f"Successfully connected to MongoDB at {MONGO_URI}")
-except Exception as e:
-    logger.error(f"Failed to connect to MongoDB: {str(e)}")
-
 def relay_to_bucket(log_data: Dict[str, Any]) -> str:
     """
     Relay logs/data to BHIV Bucket (MongoDB insert).
@@ -31,17 +23,10 @@ def relay_to_bucket(log_data: Dict[str, Any]) -> str:
     Returns:
         Status message indicating success or failure
     """
-    # If MongoDB connection failed, log to file as fallback
-    if db is None:
-        try:
-            # Fallback to file logging
-            with open("bucket_fallback.log", "a") as f:
-                f.write(f"{datetime.now().isoformat()}: {str(log_data)}\n")
-            return "Log relayed to fallback file (MongoDB unavailable)"
-        except Exception as e:
-            return f"Error relaying log to fallback: {str(e)}"
-    
     try:
+        # Get database connection
+        db = get_db()
+        
         # Add timestamp if not present
         if "timestamp" not in log_data:
             log_data["timestamp"] = datetime.now().isoformat()
@@ -51,4 +36,11 @@ def relay_to_bucket(log_data: Dict[str, Any]) -> str:
         return "Log relayed successfully"
     except Exception as e:
         logger.error(f"Error relaying log to bucket: {str(e)}")
-        return f"Error relaying log: {str(e)}"
+        # Fallback to file logging
+        try:
+            # Fallback to file logging
+            with open("bucket_fallback.log", "a") as f:
+                f.write(f"{datetime.now().isoformat()}: {str(log_data)}\n")
+            return "Log relayed to fallback file (MongoDB error)"
+        except Exception as file_e:
+            return f"Error relaying log: {str(e)}, File fallback error: {str(file_e)}"

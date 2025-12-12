@@ -4,6 +4,7 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /system/ready
     envVars:
       - key: BHIV_CORE_URL
         value: "https://placeholder-core-url.com"
