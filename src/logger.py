@@ -7,6 +7,14 @@ import logging
 import os
 import json
 
+# Import provenance module
+try:
+    from .security.provenance import create_entry
+    from .database import get_db
+    PROVENANCE_AVAILABLE = True
+except ImportError:
+    PROVENANCE_AVAILABLE = False
+
 # Set up module-specific logger
 logger = logging.getLogger(__name__)
 
@@ -56,6 +64,23 @@ class KSMLLogger:
             
         # Log to console for debugging
         logger.info(f"KSML Log: {intent} by {actor} - {outcome}")
+        
+        # Create provenance entry if available
+        if PROVENANCE_AVAILABLE:
+            try:
+                db = get_db()
+                payload = {
+                    "intent": intent,
+                    "context": context,
+                    "outcome": outcome
+                }
+                if additional_data:
+                    payload["additional_data"] = additional_data
+                    
+                provenance_entry = create_entry(db, actor=actor, event=intent, payload=payload)
+                logger.info(f"Provenance entry created: {provenance_entry['entry_hash']}")
+            except Exception as e:
+                logger.warning(f"Failed to create provenance entry: {e}")
         
         # Relay to bucket
         return relay_to_bucket(log_entry)

@@ -17,6 +17,14 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import base64
 
+# Provenance imports
+import json, time, hashlib, os
+from typing import Dict, Any, List
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature, decode_dss_signature
+from cryptography.exceptions import InvalidSignature
+
 class SecurityManager:
     """Manages security features including nonce, signature, and ledger chaining"""
     
@@ -244,6 +252,100 @@ class SecurityManager:
             
         canonical_entry = json.dumps(entry_copy, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(canonical_entry.encode('utf-8')).hexdigest()
+
+# Provenance functions
+
+def _sha256_hex(s: bytes) -> str:
+    return hashlib.sha256(s).hexdigest()
+
+def compute_payload_hash(payload: Dict[str,Any]) -> str:
+    # canonical JSON: sort keys, separators compact
+    js = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return _sha256_hex(js)
+
+def compute_entry_hash(entry: Dict[str,Any]) -> str:
+    # include ordered fields to compute the chaining hash
+    # fields: previous_hash, timestamp, actor, event, payload_hash
+    core = {
+        "previous_hash": entry.get("previous_hash"),
+        "timestamp": entry.get("timestamp"),
+        "actor": entry.get("actor"),
+        "event": entry.get("event"),
+        "payload_hash": entry.get("payload_hash")
+    }
+    js = json.dumps(core, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return _sha256_hex(js)
+
+def load_private_key_from_env() -> ec.EllipticCurvePrivateKey:
+    pem = os.environ.get("PROVENANCE_PRIVATE_PEM")
+    if not pem:
+        raise RuntimeError("PROVENANCE_PRIVATE_PEM not set")
+    return serialization.load_pem_private_key(pem.encode(), password=None)
+
+def sign_hash_hex(hex_digest: str) -> str:
+    priv = load_private_key_from_env()
+    sig = priv.sign(bytes.fromhex(hex_digest), ec.ECDSA(hashes.SHA256()))
+    # return hex signature
+    return sig.hex()
+
+def verify_signature_hex(hex_digest: str, signature_hex: str, public_pem: str) -> bool:
+    pub = serialization.load_pem_public_key(public_pem.encode())
+    try:
+        pub.verify(bytes.fromhex(signature_hex), bytes.fromhex(hex_digest), ec.ECDSA(hashes.SHA256()))
+        return True
+    except InvalidSignature:
+        return False
+
+def create_entry(db, actor: str, event: str, payload: Dict[str,Any]) -> Dict[str,Any]:
+    # get last entry to chain
+    last = db.provenance_logs.find_one(sort=[("timestamp",-1)])
+    previous_hash = last.get("entry_hash") if last else None
+    timestamp = int(time.time())
+    payload_hash = compute_payload_hash(payload)
+    entry = {
+        "previous_hash": previous_hash,
+        "timestamp": timestamp,
+        "actor": actor,
+        "event": event,
+        "payload_hash": payload_hash,
+    }
+    entry_hash = compute_entry_hash(entry)
+    signature = sign_hash_hex(entry_hash)
+    entry.update({"entry_hash": entry_hash, "signature": signature})
+    # insert as append-only
+    db.provenance_logs.insert_one(entry)
+    return entry
+
+def verify_chain(db) -> List[Dict[str,Any]]:
+    # return list of tamper reports; empty => OK
+    bad = []
+    try:
+        pub_pem = open("docs/provenance_public.pem","r").read()  # or env var
+    except FileNotFoundError:
+        # Try to get from environment variable
+        pub_pem = os.environ.get("PROVENANCE_PUBLIC_PEM", "")
+        if not pub_pem:
+            raise RuntimeError("Neither docs/provenance_public.pem nor PROVENANCE_PUBLIC_PEM found")
+    
+    cursor = db.provenance_logs.find().sort("timestamp", 1)
+    prev_hash = None
+    for e in cursor:
+        # check chain pointer
+        if e.get("previous_hash") != prev_hash:
+            bad.append({"type":"broken_chain", "entry": e})
+            prev_hash = e.get("entry_hash")
+            continue
+        # recompute entry hash
+        recomputed = compute_entry_hash(e)
+        if recomputed != e.get("entry_hash"):
+            bad.append({"type":"entry_hash_mismatch", "entry": e})
+        else:
+            # verify signature
+            ok = verify_signature_hex(recomputed, e.get("signature"), pub_pem)
+            if not ok:
+                bad.append({"type":"invalid_signature", "entry": e})
+        prev_hash = e.get("entry_hash")
+    return bad
 
 # Global security manager instance
 security_manager = SecurityManager()

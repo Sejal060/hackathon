@@ -4,6 +4,7 @@ from datetime import datetime
 import platform
 import sys
 import time
+import os
 from ..logger import ksml_logger
 from ..database import get_db
 from ..schemas.response import APIResponse
@@ -69,3 +70,45 @@ async def readiness():
         message="Service is ready",
         data=None
     )
+
+@router.get("/provenance/public-key")
+def get_public_key():
+    """Return public key for verification"""
+    try:
+        pub = open("docs/provenance_public.pem").read()
+        return APIResponse(
+            success=True,
+            message="public key",
+            data={"public_pem": pub}
+        )
+    except FileNotFoundError:
+        return APIResponse(
+            success=False,
+            message="Public key not found",
+            data=None
+        )
+    except Exception as e:
+        return APIResponse(
+            success=False,
+            message=f"Error reading public key: {str(e)}",
+            data=None
+        )
+
+@router.get("/provenance/verify")
+def verify_provenance():
+    """Verify the provenance chain"""
+    try:
+        db = get_db()
+        from ..security import verify_chain
+        reports = verify_chain(db)
+        return APIResponse(
+            success=len(reports) == 0,
+            message="verification result",
+            data={"issues": reports}
+        )
+    except Exception as e:
+        return APIResponse(
+            success=False,
+            message=f"Error during verification: {str(e)}",
+            data=None
+        )

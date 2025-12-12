@@ -1,52 +1,94 @@
+# src/database.py
+# Centralized database connection management for the HackaVerse engine
 import os
-from pymongo import MongoClient
 import time
+import logging
+from typing import Optional
+from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
 
-# MONGO_URI will be read from environment variables when connect_to_db is called
+# Configure logging
+logger = logging.getLogger(__name__)
 
-client = None
+# Global database connection
 db = None
 
 def connect_to_db_with_retry(retries=5, delay=2):
     """
-    Create a global MongoDB client with retry logic & select the default database.
-    Call this on app startup.
-    """
-    global client, db
-    # Read from environment variable
-    MONGO_URI = os.getenv("MONGO_URI")
-    if not MONGO_URI:
-        raise RuntimeError("MONGO_URI is not set in environment variables")
-
-    for i in range(retries):
-        try:
-            # Create client with connection pooling and timeout settings
-            _client = MongoClient(MONGO_URI, maxPoolSize=20, serverSelectionTimeoutMS=5000)
-            # Test the connection
-            _client.admin.command('ping')
-            
-            # Choose a database name – you can change 'hackathon' to anything you like
-            _db = _client["hackathon"]
-
-            # Assign to globals
-            globals()["client"] = _client
-            globals()["db"] = _db
-            
-            print("✅ Connected to MongoDB Atlas")
-            return _client
-        except Exception as e:
-            print(f"DB connection failed (attempt {i+1}/{retries}), retrying...")
-            if i < retries - 1:  # Don't sleep on the last attempt
-                time.sleep(delay)
+    Connect to MongoDB with retry logic and connection pooling.
     
-    raise Exception("Could not connect to MongoDB after retries")
+    Args:
+        retries (int): Number of retry attempts
+        delay (int): Delay between retries in seconds
+        
+    Returns:
+        MongoClient: Connected MongoDB client
+        
+    Raises:
+        RuntimeError: If connection fails after all retries
+    """
+    global db
+    
+    # Get MongoDB URI from environment
+    mongodb_uri = os.getenv("MONGODB_URI")
+    if not mongodb_uri:
+        raise RuntimeError("MONGODB_URI is not set in environment variables")
+    
+    # Try to connect with retries
+    for attempt in range(retries):
+        try:
+            logger.info(f"Connecting to MongoDB (attempt {attempt + 1}/{retries})...")
+            
+            # Create client with connection pooling and timeout settings
+            client = MongoClient(
+                mongodb_uri,
+                maxPoolSize=20,  # Increase connection pool size
+                serverSelectionTimeoutMS=5000,  # 5 second timeout
+                connectTimeoutMS=5000,
+                socketTimeoutMS=5000
+            )
+            
+            # Test the connection
+            client.admin.command('ping')
+            logger.info("✅ Connected to MongoDB Atlas")
+            
+            # Get the database
+            db_name = os.getenv("BUCKET_DB_NAME", "blackholeinifverse60_db_user")
+            db = client[db_name]
+            
+            # Create indexes for better performance
+            _create_indexes(db)
+            
+            return client
+            
+        except (ServerSelectionTimeoutError, ConnectionFailure) as e:
+            logger.warning(f"MongoDB connection attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:  # Don't sleep on the last attempt
+                logger.info(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                logger.error("❌ Failed to connect to MongoDB after all retries")
+                raise RuntimeError(f"Failed to connect to MongoDB after {retries} attempts: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error connecting to MongoDB: {e}")
+            raise RuntimeError(f"Unexpected error connecting to MongoDB: {e}")
 
-def connect_to_db():
-    """
-    Create a global MongoDB client & select the default database.
-    Call this on app startup.
-    """
-    return connect_to_db_with_retry()
+def _create_indexes(database):
+    """Create indexes for better performance"""
+    try:
+        # Index for provenance logs
+        database.provenance_logs.create_index([("timestamp", 1)])
+        database.provenance_logs.create_index([("entry_hash", 1)], unique=True)
+        
+        # Index for regular logs
+        database.logs.create_index([("timestamp", 1)])
+        
+        # Index for assignments
+        database.assignments.create_index([("project_id", 1)], unique=True)
+        
+        logger.info("✅ Database indexes created successfully")
+    except Exception as e:
+        logger.warning(f"Failed to create indexes: {e}")
 
 def get_db():
     """
@@ -58,10 +100,14 @@ def get_db():
 
 def close_db():
     """
-    Close the global client on shutdown.
+    Close the database connection gracefully.
     """
-    global client
-    if client is not None:
-        client.close()
-        client = None
-        print("🛑 MongoDB connection closed")
+    global db
+    if db is not None:
+        try:
+            db.client.close()
+            logger.info("✅ Database connection closed")
+        except Exception as e:
+            logger.warning(f"Error closing database connection: {e}")
+        finally:
+            db = None
