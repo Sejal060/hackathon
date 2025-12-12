@@ -151,12 +151,14 @@ from .routes.admin import router as admin_router
 from .routes.system import router as system_router
 from .routes.judge import router as judge_router
 from .routes.workflows import router as workflows_router
+from .routes.langgraph_routes import router as langgraph_router
 
 app.include_router(agent_router)
 app.include_router(admin_router)
 app.include_router(system_router)
 app.include_router(judge_router)
 app.include_router(workflows_router)
+app.include_router(langgraph_router)
 
 # Register error handler
 from .middleware_handlers.error_handler import api_exception_handler

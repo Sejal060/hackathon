@@ -23,6 +23,8 @@ services:
         value: "sk-placeholder-openai-key"
       - key: ALLOWED_ORIGINS
         value: "*"
+      - key: NOTIFIER_URL
+        value: "https://YOUR_APP_ON_RENDER.onrender.com"
 
   - type: pserv
     name: mongodb
@@ -31,3 +33,12 @@ services:
     tag: latest
     diskSizeGB: 10
     instanceSize: free
+
+cron:
+  - name: reminder-job
+    schedule: "0 9 * * *" # every day at 09:00 UTC
+    url: "https://YOUR_APP_ON_RENDER.onrender.com/flows/reminder"
+    method: POST
+    body: '{"target":"teams"}'
+    headers:
+      Content-Type: application/json
