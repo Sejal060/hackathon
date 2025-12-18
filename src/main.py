@@ -122,8 +122,9 @@ async def shutdown_event():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "https://<yash-frontend-url>"  # Replace with actual frontend URL
+        "http://localhost:3000",        # Yash local
+        "http://192.168.0.94:3000",     # Yash network
+        "https://blackholeinfiverse66.github.io"   # Yash GitHub Pages
     ],
     allow_credentials=True,
     allow_methods=["*"],
