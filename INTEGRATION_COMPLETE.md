@@ -1,48 +1,73 @@
-# INTEGRATION_COMPLETE.md
+# HackaVerse – Frontend ↔ Backend Integration Contract
 
-This document defines the frozen backend contract for frontend integration. These are the exact request and response formats that the frontend should use.
+Backend Base URL:
+https://ai-agent-x2iw.onrender.com
 
-## Registration Endpoint
+Frontend:
+- Localhost: http://localhost:3000
+- Deployed: https://blackholeinfiverse66.github.io
 
-**POST /admin/register**
+CORS: Verified
 
-Request:
-```json
-{
-  "team_name": "Team Alpha",
-  "members": ["Alice", "Bob", "Charlie"],
-  "project_title": "AI-Powered Solution"
-}
-```
+---
 
-Response:
-```json
+## 1. System Health
+
+### Endpoint
+GET /system/health
+
+### Request
+No body
+
+### Response (200)
 {
   "success": true,
-  "message": "Team registered successfully",
+  "message": "System is healthy",
   "data": {
-    "team_id": "team_alpha"
+    "uptime": "4550.24 seconds",
+    "version": "v3"
   }
 }
-```
 
-## Agent Chat Endpoint
+Frontend Usage:
+Used for health widget and startup checks.
 
-**POST /agent/**
+---
 
-Request:
-```json
+## 2. Register
+
+### Endpoint
+POST /admin/register
+
+### Request
 {
-  "team_id": "team_alpha",
-  "prompt": "How do I submit my project?",
-  "metadata": {
-    "context": "project submission"
-  }
+  "team_name": "Test Team",
+  "members": ["Alice", "Bob"],
+  "project_title": "Test Project"
 }
-```
 
-Response:
-```json
+### Response
+- 200 / 201: Team registered successfully
+- 400: Validation error or missing API key
+- 404: Endpoint not implemented (frontend mock mode)
+
+Frontend Status:
+UI wired, backend partially implemented.
+
+---
+
+## 3. Agent
+
+### Endpoint
+POST /agent
+
+### Request
+{
+  "team_id": "team123",
+  "prompt": "How do I submit my project?"
+}
+
+### Response (200)
 {
   "processed_input": "processed input",
   "action": "action plan",
@@ -50,105 +75,47 @@ Response:
   "reward": 1.0,
   "core_response": null
 }
-```
 
-## Reward Endpoint
+Frontend Usage:
+Used by HackaAgent chat interface.
 
-**POST /admin/reward**
+---
 
-Request:
-```json
-{
-  "request_id": "req_12345",
-  "outcome": "success"
-}
-```
+## 4. Admin Reward
 
-Response:
-```json
-{
-  "reward_value": 1.0,
-  "feedback": "Great job!"
-}
-```
+### Endpoint
+POST /admin/reward
 
-## Logs Endpoint
+### Status
+Protected / Not yet integrated
 
-**POST /admin/logs**
+Frontend:
+Admin UI placeholder exists.
+Backend logic pending or access-restricted.
 
-Request:
-```json
-{
-  "timestamp": "2025-01-01T10:00:00Z",
-  "level": "INFO",
-  "message": "User performed action",
-  "additional_data": {
-    "user_id": "user_123"
-  }
-}
-```
+---
 
-Response:
-```json
-{
-  "success": true,
-  "message": "Logs relayed successfully",
-  "data": {
-    "status": "logged",
-    "result": "Log relayed successfully"
-  }
-}
-```
+## 5. Logs
 
-**GET /system/logs**
+### Endpoint
+GET /system/logs
 
-Request:
-```json
-GET /system/logs?limit=50
-```
+### Status
+Accessible with proper authentication.
 
-Response:
-```json
-{
-  "success": true,
-  "message": "Logs retrieved successfully",
-  "data": {
-    "logs": [
-      {
-        "_id": "507f1f77bcf86cd799439011",
-        "timestamp": "2025-01-01T10:00:00Z",
-        "level": "INFO",
-        "message": "User performed action"
-      }
-    ]
-  }
-}
-```
+Frontend:
+Logs page wired; backend access restricted.
 
-## Health Endpoint
+---
 
-**GET /system/health**
+## Integration Summary
 
-Response:
-```json
-{
-  "success": true,
-  "message": "System is healthy",
-  "data": {
-    "uptime": "120.50 seconds",
-    "version": "v3"
-  }
-}
-```
+- Frontend successfully connected to production backend
+- Health checks operational
+- AI agent integrated
+- Auth flows mocked for testing
+- Admin and logs endpoints documented
 
-## Backend URL and CORS Configuration
-
-**Backend URL**: https://ai-agent-x2iw.onrender.com
-
-**Allowed CORS Origins**:
-- http://localhost:3000
-- https://<yash-frontend-url> (Replace with actual frontend URL)
-
-## Instructions for Yash
-
-Use only these payloads. If anything breaks, report immediately.
+Integration Owner: Sejal  
+Frontend: Yash  
+QA: Vinayak
