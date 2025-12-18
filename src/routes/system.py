@@ -44,6 +44,47 @@ async def health():
         }
     )
 
+@router.get("/logs", summary="Retrieve system logs")
+async def get_logs(limit: int = 50):
+    """
+    Retrieve recent system logs from the database.
+    
+    Args:
+    - **limit**: Number of recent logs to retrieve (default: 50, max: 100)
+    
+    Returns:
+    - **success**: Boolean indicating success
+    - **message**: Status message
+    - **data**: Contains list of log entries
+    """
+    try:
+        # Limit the number of logs to prevent excessive data transfer
+        limit = min(limit, 100)
+        
+        # Get database connection
+        db = get_db()
+        
+        # Retrieve recent logs sorted by timestamp descending
+        logs_cursor = db.logs.find().sort("timestamp", -1).limit(limit)
+        logs_list = list(logs_cursor)
+        
+        # Convert ObjectId to string for JSON serialization
+        for log in logs_list:
+            if "_id" in log:
+                log["_id"] = str(log["_id"])
+        
+        return APIResponse(
+            success=True,
+            message="Logs retrieved successfully",
+            data={"logs": logs_list}
+        )
+    except Exception as e:
+        return APIResponse(
+            success=False,
+            message=f"Error retrieving logs: {str(e)}",
+            data=None
+        )
+
 @router.get("/test-db", summary="Test database connection")
 async def test_db():
     """
