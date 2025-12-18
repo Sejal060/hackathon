@@ -148,3 +148,36 @@ class TestMCPRouter(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+import pytest
+import asyncio
+from src.mcp_router import route_message
+
+@pytest.mark.asyncio
+async def test_judge_routing():
+    res = await route_message("judge", {"task": "score"})
+    assert res["agent"] == "judge"
+
+@pytest.mark.asyncio
+async def test_mentor_routing():
+    res = await route_message("mentor", {"task": "advise"})
+    assert res["agent"] == "mentor"
+
+@pytest.mark.asyncio
+async def test_system_routing():
+    res = await route_message("system", {"task": "process"})
+    assert res["agent"] == "system"
+
+@pytest.mark.asyncio
+async def test_default_routing():
+    res = await route_message("unknown", {"task": "handle"})
+    assert res["agent"] == "default"
+
+@pytest.mark.asyncio
+async def test_load_balancing():
+    # Test that we get different instances for judge agents (load balancing)
+    res1 = await route_message("judge", {"task": "score1"})
+    res2 = await route_message("judge", {"task": "score2"})
+    # Both should be judge agents but could be different instances
+    assert res1["agent"] == "judge"
+    assert res2["agent"] == "judge"

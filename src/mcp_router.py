@@ -7,6 +7,45 @@ from .core_connector import connect_to_core
 from .bucket_connector import relay_to_bucket
 from .logger import ksml_logger
 from datetime import datetime
+import asyncio
+
+# Import the new MCP routing components
+from src.mcp.agent_registry import AGENT_REGISTRY
+from src.mcp.load_balancer import RoundRobinBalancer
+
+# Initialize load balancers for each agent type
+_balancers = {
+    role: RoundRobinBalancer(agents)
+    for role, agents in AGENT_REGISTRY.items()
+}
+
+async def route_message(agent_type: str, payload: dict):
+    """Route message to appropriate agent with load balancing and forwarding support."""
+    
+    # Log the routing event
+    ksml_logger.log_event(
+        intent="agent_routing",
+        actor="mcp_router",
+        context=f"Routing to agent type: {agent_type}",
+        outcome="started"
+    )
+    
+    # Get the appropriate balancer or default
+    balancer = _balancers.get(agent_type, _balancers["default"])
+    agent = balancer.next()
+
+    # Handle the message with the selected agent
+    result = await agent.handle(payload)
+
+    # Check if we need to forward to another agent
+    next_agent = result.get("forward_to")
+    if next_agent:
+        # Recursive call to route to the next agent
+        forwarded_result = await route_message(next_agent, result)
+        # Merge results
+        result.update(forwarded_result)
+
+    return result
 
 def route_mcp(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Coordinate MCP agents: input -> reason -> execute."""
