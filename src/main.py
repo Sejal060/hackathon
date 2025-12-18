@@ -118,28 +118,17 @@ async def startup_event():
 async def shutdown_event():
     close_db()
 
-# Configure CORS with environment-specific settings
-# In development, allow all origins
-# In production, restrict to specific domains
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
-if "*" in allowed_origins:
-    # Development mode - allow all origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    # Production mode - restrict to specific origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Add CORS safety for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://<yash-frontend-url>"  # Replace with actual frontend URL
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Add security middleware
 from .middleware import SecurityMiddleware
