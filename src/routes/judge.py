@@ -8,6 +8,7 @@ from ..auth import get_api_key
 from ..schemas.response import APIResponse
 from typing import Dict, Any
 import logging
+from ..security import verify_nonce_only
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/judge", tags=["judge"])
 multi_agent_judge = MultiAgentJudge()
 
 @router.post("/score", response_model=JudgeResponse, summary="Scores a single submission")
-async def score_submission(request: JudgeRequest):
+async def score_submission(request: JudgeRequest, nonce=Depends(verify_nonce_only)):
     """
     Scores a single submission using the Multi-Agent AI Judging Engine.
     
@@ -66,7 +67,7 @@ async def score_submission(request: JudgeRequest):
     )
 
 @router.post("/submit", response_model=Dict[str, Any], summary="Saves and scores a submission")
-async def submit_and_score(request: JudgeRequest):
+async def submit_and_score(request: JudgeRequest, nonce=Depends(verify_nonce_only)):
     """
     Saves and scores a submission using the Multi-Agent AI Judging Engine.
     
@@ -125,7 +126,7 @@ async def submit_and_score(request: JudgeRequest):
     )
 
 @router.get("/rubric", response_model=Dict[str, Any], summary="Returns judging criteria")
-async def get_rubric():
+async def get_rubric(nonce=Depends(verify_nonce_only)):
     """
     Returns the judging criteria used by the Multi-Agent AI Judging Engine.
     """

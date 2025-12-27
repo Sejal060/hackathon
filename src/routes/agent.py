@@ -8,6 +8,7 @@ from datetime import datetime
 from ..bucket_connector import relay_to_bucket
 from ..logger import ksml_logger
 from ..auth import get_api_key
+from ..security import verify_nonce_only
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 judging_engine = JudgingEngine()
 
 @router.post("/", response_model=AgentResponse, summary="Process agent requests", dependencies=[Depends(get_api_key)])
-def agent_endpoint(request: AgentRequest):
+async def agent_endpoint(request: AgentRequest, nonce=Depends(verify_nonce_only)):
     """
     Process agent requests and generate responses.
     

@@ -7,11 +7,12 @@ from datetime import datetime
 from ..logger import ksml_logger
 from ..auth import get_api_key
 from ..schemas.response import APIResponse
+from ..security import verify_nonce_only
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.post("/reward", response_model=RewardResponse, summary="Apply reward to a request", dependencies=[Depends(get_api_key)])
-def reward_endpoint(request: RewardRequest):
+async def reward_endpoint(request: RewardRequest, nonce=Depends(verify_nonce_only)):
     """
     Calculate and apply rewards based on request outcome.
     
@@ -28,7 +29,7 @@ def reward_endpoint(request: RewardRequest):
     return RewardResponse(reward_value=reward_value, feedback=feedback)
 
 @router.post("/logs", summary="Relay logs to bucket", dependencies=[Depends(get_api_key)])
-def logs_endpoint(request: LogRequest):
+async def logs_endpoint(request: LogRequest, nonce=Depends(verify_nonce_only)):
     """
     Relay logs to the BHIV Bucket.
     
@@ -47,7 +48,7 @@ def logs_endpoint(request: LogRequest):
     )
 
 @router.post("/register", summary="Register a new team", dependencies=[Depends(get_api_key)])
-def register_endpoint(team: TeamRegistration):
+async def register_endpoint(team: TeamRegistration, nonce=Depends(verify_nonce_only)):
     """
     Register a new team for the hackathon.
     
@@ -65,7 +66,7 @@ def register_endpoint(team: TeamRegistration):
     )
 
 @router.post("/webhook/hackaverse/registration", summary="N8N webhook for team registration")
-async def webhook_registration(payload: TeamRegistration):
+async def webhook_registration(payload: TeamRegistration, nonce=Depends(verify_nonce_only)):
     """
     N8N webhook endpoint for team registration automation (deprecated - use LangGraph flows).
     
