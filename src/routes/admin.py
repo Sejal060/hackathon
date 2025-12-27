@@ -65,20 +65,37 @@ def register_endpoint(team: TeamRegistration):
     )
 
 @router.post("/webhook/hackaverse/registration", summary="N8N webhook for team registration")
-def webhook_registration(payload: TeamRegistration):
+async def webhook_registration(payload: TeamRegistration):
     """
-    N8N webhook endpoint for team registration automation.
+    N8N webhook endpoint for team registration automation (deprecated - use LangGraph flows).
     
     - **team_name**: Name of the team
     - **members**: List of team members
     - **project_title**: Title of the team's project
     """
-    # Log the registration using KSML
-    ksml_logger.log_registration(payload.team_name, payload.project_title)
+    # Redirect to LangGraph flow for team registration
+    from src.langgraph.runner import run_flow
     
-    # Add registration logic if needed
-    return APIResponse(
-        success=True,
-        message="Team registered via webhook",
-        data={"status": "registered", "team_id": f"team_{payload.team_name.lower().replace(' ', '_')}"}
-    )
+    # Prepare the payload for the LangGraph flow
+    flow_payload = {
+        "team_name": payload.team_name,
+        "members": payload.members,
+        "project_title": payload.project_title,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    try:
+        result = await run_flow("team_registration", flow_payload)
+        return APIResponse(
+            success=True,
+            message="Team registration processed via LangGraph flow",
+            data={"status": "registered", "result": result}
+        )
+    except Exception as e:
+        # Fallback to original logic if LangGraph flow fails
+        ksml_logger.log_registration(payload.team_name, payload.project_title)
+        return APIResponse(
+            success=True,
+            message="Team registered via fallback",
+            data={"status": "registered", "team_id": f"team_{payload.team_name.lower().replace(' ', '_')}"}
+        )
