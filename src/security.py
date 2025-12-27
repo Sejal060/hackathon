@@ -1,13 +1,13 @@
 """
 Security utilities for the HackaVerse platform
 """
-from fastapi import Header, HTTPException
+import hmac
+import hashlib
 import os
+from fastapi import Header, HTTPException
 from datetime import datetime
 import time
 import json
-import hashlib
-import hmac
 import base64
 from typing import Dict, Any, Optional
 
@@ -96,31 +96,43 @@ class SecurityManager:
 security_manager = SecurityManager()
 
 
+SECRET = os.getenv("SIGNING_SECRET", "dev-secret")
+
 def verify_nonce_only(
     x_nonce: str = Header(None, alias="X-Nonce"),
-    x_timestamp: str = Header(None, alias="X-Timestamp")
+    x_timestamp: str = Header(None, alias="X-Timestamp"),
+    x_signature: str = Header(None, alias="X-Signature"),
 ):
     """
-    Verify both X-Nonce and X-Timestamp headers for endpoints.
+    Verify X-Nonce, X-Timestamp, and X-Signature headers for endpoints.
     
     Args:
         x_nonce: The X-Nonce header value
         x_timestamp: The X-Timestamp header value
+        x_signature: The X-Signature header value
         
     Returns:
         Dictionary with nonce and timestamp values if valid
         
     Raises:
-        HTTPException: If headers are missing and not in test mode
+        HTTPException: If headers are missing or signature is invalid
     """
     # Allow bypass in test mode
     if os.getenv("SKIP_NONCE") == "true":
         return "bypassed"
-    
+
     if not x_nonce:
         raise HTTPException(status_code=400, detail="Missing X-Nonce header")
-    
     if not x_timestamp:
         raise HTTPException(status_code=400, detail="Missing X-Timestamp header")
-    
-    return {"nonce": x_nonce, "timestamp": x_timestamp}
+    if not x_signature:
+        raise HTTPException(status_code=400, detail="Missing X-Signature header")
+
+    # Validate signature
+    message = f"{x_nonce}:{x_timestamp}".encode()
+    expected = hmac.new(SECRET.encode(), message, hashlib.sha256).hexdigest()
+
+    if x_signature != expected:
+        raise HTTPException(status_code=401, detail="Invalid X-Signature")
+
+    return {"nonce": x_nonce, "timestamp": x_timestamp, "signature": x_signature}
