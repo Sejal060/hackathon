@@ -1,12 +1,10 @@
 """
 Security utilities for the HackaVerse platform
 """
-import hmac
-import hashlib
-import os
-from fastapi import Header, HTTPException
-from datetime import datetime
 import time
+from fastapi import Header, HTTPException
+import os, hmac, hashlib
+from datetime import datetime
 import json
 import base64
 from typing import Dict, Any, Optional
@@ -98,26 +96,14 @@ security_manager = SecurityManager()
 
 SECRET = os.getenv("SIGNING_SECRET", "dev-secret")
 
+def current_minutes():
+    return int(time.time() // 60)
+
 def verify_nonce_only(
     x_nonce: str = Header(None, alias="X-Nonce"),
     x_timestamp: str = Header(None, alias="X-Timestamp"),
     x_signature: str = Header(None, alias="X-Signature"),
 ):
-    """
-    Verify X-Nonce, X-Timestamp, and X-Signature headers for endpoints.
-    
-    Args:
-        x_nonce: The X-Nonce header value
-        x_timestamp: The X-Timestamp header value
-        x_signature: The X-Signature header value
-        
-    Returns:
-        Dictionary with nonce and timestamp values if valid
-        
-    Raises:
-        HTTPException: If headers are missing or signature is invalid
-    """
-    # Allow bypass in test mode
     if os.getenv("SKIP_NONCE") == "true":
         return "bypassed"
 
@@ -128,9 +114,20 @@ def verify_nonce_only(
     if not x_signature:
         raise HTTPException(status_code=400, detail="Missing X-Signature header")
 
-    # Validate signature
-    message = f"{x_nonce}:{x_timestamp}".encode()
-    expected = hmac.new(SECRET.encode(), message, hashlib.sha256).hexdigest()
+    try:
+        ts = int(x_timestamp)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid X-Timestamp format")
+
+    now = current_minutes()
+
+    # Allow ±2 minutes skew
+    if abs(now - ts) > 2:
+        raise HTTPException(status_code=400, detail="Request timestamp is too old or in the future")
+
+    # Validate signature based on minutes
+    msg = f"{x_nonce}:{x_timestamp}".encode()
+    expected = hmac.new(SECRET.encode(), msg, hashlib.sha256).hexdigest()
 
     if x_signature != expected:
         raise HTTPException(status_code=401, detail="Invalid X-Signature")
