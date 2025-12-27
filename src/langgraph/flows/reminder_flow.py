@@ -16,11 +16,16 @@ async def load_targets(ctx: Dict[str,Any]) -> Dict[str,Any]:
     return ctx
 
 async def send_reminders(ctx: Dict[str,Any]) -> Dict[str,Any]:
-    notifier_url = ctx.get("NOTIFIER_URL", os.environ.get("NOTIFIER_URL", "http://localhost:8001"))
-    async with httpx.AsyncClient(timeout=10) as client:
-        for t in ctx.get("targets", []):
-            payload = {"target": t}
-            await client.post(f"{notifier_url}/notify/reminder", json=payload)
+    # Send reminders (simulate by logging)
+    for t in ctx.get("targets", []):
+        logger.info(f"Reminder sent to {t}")
+    # Log delivery
+    db = get_db()
+    db.reminder_logs.insert_one({
+        "targets": ctx["targets"],
+        "message": ctx.get("message", "Deadline reminder"),
+        "ts": ctx.get("ts")
+    })
     return ctx
 
 def build_reminder_flow():

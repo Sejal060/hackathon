@@ -3,6 +3,10 @@ import logging, httpx
 from src.database import get_db
 from typing import Dict, Any
 import os
+import openai
+from dotenv import load_dotenv
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 logger = logging.getLogger(__name__)
 
