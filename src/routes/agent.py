@@ -16,7 +16,7 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 judging_engine = JudgingEngine()
 
 @router.post("/", response_model=AgentResponse, summary="Process agent requests", dependencies=[Depends(get_api_key)])
-async def agent_endpoint(request: AgentRequest, nonce=Depends(verify_nonce_only)):
+async def agent_endpoint(request: AgentRequest, nonce_data=Depends(verify_nonce_only)):
     """
     Process agent requests and generate responses.
     

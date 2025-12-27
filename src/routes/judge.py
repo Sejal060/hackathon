@@ -20,7 +20,7 @@ router = APIRouter(prefix="/judge", tags=["judge"])
 multi_agent_judge = MultiAgentJudge()
 
 @router.post("/score", response_model=JudgeResponse, summary="Scores a single submission")
-async def score_submission(request: JudgeRequest, nonce=Depends(verify_nonce_only)):
+async def score_submission(request: JudgeRequest, nonce_data=Depends(verify_nonce_only)):
     """
     Scores a single submission using the Multi-Agent AI Judging Engine.
     
@@ -67,7 +67,7 @@ async def score_submission(request: JudgeRequest, nonce=Depends(verify_nonce_onl
     )
 
 @router.post("/submit", response_model=Dict[str, Any], summary="Saves and scores a submission")
-async def submit_and_score(request: JudgeRequest, nonce=Depends(verify_nonce_only)):
+async def submit_and_score(request: JudgeRequest, nonce_data=Depends(verify_nonce_only)):
     """
     Saves and scores a submission using the Multi-Agent AI Judging Engine.
     
@@ -126,7 +126,7 @@ async def submit_and_score(request: JudgeRequest, nonce=Depends(verify_nonce_onl
     )
 
 @router.get("/rubric", response_model=Dict[str, Any], summary="Returns judging criteria")
-async def get_rubric(nonce=Depends(verify_nonce_only)):
+async def get_rubric(nonce_data=Depends(verify_nonce_only)):
     """
     Returns the judging criteria used by the Multi-Agent AI Judging Engine.
     """
