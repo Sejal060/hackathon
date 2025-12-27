@@ -54,13 +54,19 @@ async def persist_score(ctx: Dict[str,Any]) -> Dict[str,Any]:
 
 async def log_provenance(ctx: Dict[str,Any]) -> Dict[str,Any]:
     # Log provenance of the judging process
-    ksml_logger.log_judging(
-        team_id=ctx.get("team_id", ""),
-        project_id=ctx.get("project_id", ""),
-        judge_id=ctx.get("judge_id", ""),
-        score=ctx.get("evaluation_result", {}).get("consensus_score", 0),
-        individual_scores=ctx.get("evaluation_result", {}).get("individual_scores", {}),
-        reasoning_chain=ctx.get("evaluation_result", {}).get("reasoning_chain", "")
+    ksml_logger.log_event(
+        intent="judging_process",
+        actor=f"judge_{ctx.get('judge_id', 'unknown')}",
+        context=f"Judging completed for project {ctx.get('project_id', '')} by team {ctx.get('team_id', '')}",
+        outcome="completed",
+        additional_data={
+            "team_id": ctx.get("team_id", ""),
+            "project_id": ctx.get("project_id", ""),
+            "judge_id": ctx.get("judge_id", ""),
+            "score": ctx.get("evaluation_result", {}).get("consensus_score", 0),
+            "individual_scores": ctx.get("evaluation_result", {}).get("individual_scores", {}),
+            "reasoning_chain": ctx.get("evaluation_result", {}).get("reasoning_chain", "")
+        }
     )
     return ctx
 

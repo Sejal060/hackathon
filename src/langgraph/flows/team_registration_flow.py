@@ -42,8 +42,7 @@ async def log_registration(ctx: Dict[str,Any]) -> Dict[str,Any]:
     # Log the registration event
     ksml_logger.log_registration(
         team_name=ctx.get("team_name", ""),
-        project_title=ctx.get("project_title", ""),
-        team_id=ctx.get("team_id", "")
+        project_title=ctx.get("project_title", "")
     )
     return ctx
 
