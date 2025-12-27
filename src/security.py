@@ -96,18 +96,22 @@ class SecurityManager:
 security_manager = SecurityManager()
 
 
-def verify_nonce_only(x_nonce: str = Header(None, alias="X-Nonce")):
+def verify_nonce_only(
+    x_nonce: str = Header(None, alias="X-Nonce"),
+    x_timestamp: str = Header(None, alias="X-Timestamp")
+):
     """
-    Verify only the X-Nonce header for simpler endpoints.
+    Verify both X-Nonce and X-Timestamp headers for endpoints.
     
     Args:
         x_nonce: The X-Nonce header value
+        x_timestamp: The X-Timestamp header value
         
     Returns:
-        The nonce value if valid
+        Dictionary with nonce and timestamp values if valid
         
     Raises:
-        HTTPException: If nonce is missing and not in test mode
+        HTTPException: If headers are missing and not in test mode
     """
     # Allow bypass in test mode
     if os.getenv("SKIP_NONCE") == "true":
@@ -115,4 +119,8 @@ def verify_nonce_only(x_nonce: str = Header(None, alias="X-Nonce")):
     
     if not x_nonce:
         raise HTTPException(status_code=400, detail="Missing X-Nonce header")
-    return x_nonce
+    
+    if not x_timestamp:
+        raise HTTPException(status_code=400, detail="Missing X-Timestamp header")
+    
+    return {"nonce": x_nonce, "timestamp": x_timestamp}
