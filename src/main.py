@@ -129,9 +129,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add security middleware
-from .middleware import SecurityMiddleware
-app.add_middleware(SecurityMiddleware)
+# Security middleware removed - using simple API key authentication
 
 # Include routers
 from .routes.agent import router as agent_router

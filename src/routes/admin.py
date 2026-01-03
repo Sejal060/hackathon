@@ -7,7 +7,6 @@ from datetime import datetime
 from ..logger import ksml_logger
 from ..auth import get_api_key
 from ..schemas.response import APIResponse
-from ..security import verify_nonce_only
 
 router = APIRouter(prefix="", tags=["admin"])
 

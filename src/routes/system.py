@@ -8,7 +8,6 @@ import os
 from ..logger import ksml_logger
 from ..database import get_db
 from ..schemas.response import APIResponse
-from ..security import verify_nonce_only
 
 router = APIRouter(prefix="/system", tags=["system"])
 

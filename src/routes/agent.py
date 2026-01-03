@@ -8,7 +8,6 @@ from datetime import datetime
 from ..bucket_connector import relay_to_bucket
 from ..logger import ksml_logger
 from ..auth import get_api_key
-from ..security import verify_nonce_only
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
