@@ -38,13 +38,20 @@ async def health():
     # Log the health check using KSML
     ksml_logger.log_system_health("ok")
 
+    # Check if security features are enforced
+    security_enforced = bool(os.getenv("SECURITY_SECRET_KEY"))
+
     return APIResponse(
         success=True,
         message="System health check",
         data={
             "uptime": f"{uptime:.2f} seconds",
             "version": version,
-            **db_status
+            **db_status,
+            "request_signing": "enabled" if security_enforced else "disabled",
+            "replay_protection": "enabled" if security_enforced else "disabled",
+            "rate_limiting": "enabled",  # Always enabled
+            "role_scoped_keys": "enabled"  # Always enabled
         }
     )
 

@@ -142,4 +142,60 @@ curl -X POST https://ai-agent-x2iw.onrender.com/admin/registration \
 1. **CORS**: Currently allows all origins (to be restricted in production)
 2. **Input Validation**: All endpoints use Pydantic models for validation
 3. **Error Information**: Error responses don't expose sensitive system information
-4. **No Authentication**: Currently no authentication (to be added based on requirements)
+4. **API Key Authentication**: Required for admin endpoints
+5. **Security Hardening**: Implemented request signing, replay protection, rate limiting, and role-based access
+
+### Security Features
+
+#### Request Signing
+- **Header**: `X-Signature`
+- **Header**: `X-Timestamp`
+- **Header**: `X-Nonce` (required when signing is enabled)
+- **Algorithm**: HMAC-SHA256(secret, timestamp + request_body)
+- **Secret**: `SECURITY_SECRET_KEY` environment variable
+- **Enforcement**: When `SECURITY_SECRET_KEY` is set, all `/agent/*` and `/admin/*` requests must include valid headers
+- **Backward Compatibility**: When `SECURITY_SECRET_KEY` is not set, requests work without security headers
+
+#### Replay Protection (Optional)
+- **Header**: `X-Nonce`
+- **Header**: `X-Timestamp`
+- **TTL**: 5 minutes
+- **Behavior**: Rejects reused nonces within TTL or timestamps older than 5 minutes
+
+#### Rate Limiting
+- **General**: 60 requests per minute per API key
+- **Admin Routes**: 10 requests per minute for `/admin/*` endpoints
+- **Response**: 429 Too Many Requests on limit exceeded
+
+#### Role-Scoped API Keys
+- **Agent Role**: Access to `/agent/*` endpoints
+- **Admin Role**: Access to `/admin/*` and `/agent/*` endpoints
+- **Default**: API key from `API_KEY` env var has admin role
+
+#### Example Signed Request
+```bash
+# Generate signature
+TIMESTAMP=$(date +%s)
+BODY='{"team_id":"test","prompt":"hello"}'
+SECRET="your_secret_key"
+SIGNATURE=$(echo -n "${TIMESTAMP}${BODY}" | openssl dgst -sha256 -hmac "$SECRET" -hex | sed 's/^.* //')
+
+curl -X POST http://localhost:8001/agent/ \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key" \
+  -H "X-Timestamp: $TIMESTAMP" \
+  -H "X-Signature: $SIGNATURE" \
+  -H "X-Nonce: unique_nonce_123" \
+  -d "$BODY"
+```
+
+#### Health Check Security Status
+The `/system/health` endpoint now includes:
+```json
+{
+  "request_signing": "enabled",  // or "disabled" based on SECURITY_SECRET_KEY
+  "replay_protection": "enabled",  // or "disabled" based on SECURITY_SECRET_KEY
+  "rate_limiting": "enabled",
+  "role_scoped_keys": "enabled"
+}
+```

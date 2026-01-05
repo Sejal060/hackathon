@@ -27,7 +27,11 @@ This document provides handover information for Phase B of the HackaVerse backen
       "db_connected": true,
       "degraded_mode": false,
       "env": "development",
-      "db_error_type": null
+      "db_error_type": null,
+      "request_signing": "enabled",  // or "disabled" based on SECURITY_SECRET_KEY
+      "replay_protection": "enabled",  // or "disabled" based on SECURITY_SECRET_KEY
+      "rate_limiting": "enabled",
+      "role_scoped_keys": "enabled"
     }
   }
   ```
@@ -51,6 +55,16 @@ This document provides handover information for Phase B of the HackaVerse backen
   - Added `ENV=production` for production deployments
   - Corrected `MONGODB_URI` environment variable mapping
   - Ensures clean startup without crash loops
+
+### 6. Security Hardening Features
+- **Files**: `src/security.py`, `src/middleware.py`, `src/main.py`, `src/routes/system.py`
+- **Features Implemented**:
+  - **Request Signing (HMAC)**: HMAC-SHA256 signature validation using `SECURITY_SECRET_KEY` (enforced when env var is set)
+  - **Replay Protection**: Nonce-based protection with 5-minute TTL (enforced when `SECURITY_SECRET_KEY` is set)
+  - **Role-Scoped API Keys**: API keys mapped to `agent` or `admin` roles
+  - **Rate Limiting**: 60 requests/minute per API key, 10 requests/minute for `/admin` routes
+- **Backward Compatibility**: When `SECURITY_SECRET_KEY` is not set, requests work without security headers
+- **Health Endpoint**: Updated to show security feature status (enabled/disabled based on env var)
 
 ## QA Test Payloads
 
