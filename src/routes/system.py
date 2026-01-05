@@ -115,45 +115,13 @@ async def test_db():
         data={"collections": collections}
     )
 
-@router.get("/ready")
-async def readiness():
+@router.get("/ready", include_in_schema=False)
+async def system_ready():
     """
-    Check if the service is ready to accept traffic.
-    This includes database connectivity and other critical dependencies.
-    
-    Returns:
-    - **success**: Boolean indicating readiness
-    - **message**: Status message
-    - **data**: Contains readiness details
+    Critical health check endpoint for deployment platforms.
+    Must always return 200 OK with no dependencies or validation.
     """
-    try:
-        # Test database connection
-        db = get_db()
-        # Try to list collections to verify database connectivity
-        collections = db.list_collection_names()
-        
-        # Additional checks can be added here
-        # For example, checking if critical services are available
-        
-        return APIResponse(
-            success=True,
-            message="Service is ready",
-            data={
-                "database_connected": True,
-                "collections_count": len(collections),
-                "timestamp": datetime.now().isoformat()
-            }
-        )
-    except Exception as e:
-        return APIResponse(
-            success=False,
-            message=f"Service not ready: {str(e)}",
-            data={
-                "database_connected": False,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
-            }
-        )
+    return {"status": "ready"}
 
 @router.get("/provenance/public-key")
 def get_public_key():

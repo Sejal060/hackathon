@@ -23,8 +23,13 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         """
         Process incoming requests with security checks
         """
-        # Skip security checks for certain endpoints (health checks, docs, etc.)
-        skip_paths = ["/system/health", "/ping", "/docs", "/redoc", "/openapi.json", "/"]
+        # Critical: Bypass ALL middleware for health check endpoints
+        # This must be the first check to prevent any processing
+        if request.url.path in ("/system/ready", "/system/health"):
+            return await call_next(request)
+
+        # Skip security checks for certain endpoints (docs, etc.)
+        skip_paths = ["/ping", "/docs", "/redoc", "/openapi.json", "/"]
         if request.url.path in skip_paths:
             return await call_next(request)
 
