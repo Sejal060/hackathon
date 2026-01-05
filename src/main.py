@@ -23,8 +23,21 @@ from .database import connect_to_db_with_retry, close_db
 # Load environment variables
 load_dotenv()
 
-# Configure MongoDB
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/hackaverse")
+# Validate environment variables
+ENV = os.getenv("ENV", "development")
+MONGODB_URI = os.getenv("MONGODB_URI")
+BUCKET_DB_NAME = os.getenv("BUCKET_DB_NAME", "blackholeinifverse60_db_user")
+
+if ENV == "production":
+    if not MONGODB_URI:
+        raise RuntimeError("MONGODB_URI is required in production mode")
+    if not BUCKET_DB_NAME:
+        raise RuntimeError("BUCKET_DB_NAME is required in production mode")
+else:
+    if not MONGODB_URI:
+        logger.warning("MONGODB_URI not set, will start in degraded mode")
+    if not BUCKET_DB_NAME:
+        logger.warning("BUCKET_DB_NAME not set, using default")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

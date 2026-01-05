@@ -10,11 +10,6 @@ services:
         value: "https://placeholder-core-url.com"
       - key: BHIV_BUCKET_DIR
         value: "./data/bucket"
-      - key: MONGO_URI
-        fromService:
-          name: mongodb
-          property: connectionString
-          envVarKey: MONGO_URI
       - key: BUCKET_DB_NAME
         value: "blackholeinifverse60_db_user"
       - key: API_KEY
@@ -25,6 +20,12 @@ services:
         value: "*"
       - key: NOTIFIER_URL
         value: "https://YOUR_APP_ON_RENDER.onrender.com"
+      - key: ENV
+        value: "production"
+      - key: MONGODB_URI
+        fromService:
+          name: mongodb
+          property: connectionString
 
   - type: pserv
     name: mongodb

@@ -6,28 +6,36 @@ import logging
 from typing import Optional
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError, ConnectionFailure
+from fastapi import HTTPException
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Environment
+ENV = os.getenv("ENV", "development")
+
 # Global database connection
 db = None
+
+# Degraded mode globals
+DB_AVAILABLE = False
+DB_ERROR_TYPE = None
 
 def connect_to_db_with_retry(retries=5, delay=2):
     """
     Connect to MongoDB with retry logic and connection pooling.
-    
+
     Args:
         retries (int): Number of retry attempts
         delay (int): Delay between retries in seconds
-        
+
     Returns:
         MongoClient: Connected MongoDB client
-        
+
     Raises:
         RuntimeError: If connection fails after all retries
     """
-    global db
+    global db, DB_AVAILABLE, DB_ERROR_TYPE
     
     # Get MongoDB URI from environment
     mongodb_uri = os.getenv("MONGODB_URI")
@@ -51,14 +59,18 @@ def connect_to_db_with_retry(retries=5, delay=2):
             # Test the connection
             client.admin.command('ping')
             logger.info("✅ Connected to MongoDB Atlas")
-            
+
             # Get the database
             db_name = os.getenv("BUCKET_DB_NAME", "blackholeinifverse60_db_user")
             db = client[db_name]
-            
+
             # Create indexes for better performance
             _create_indexes(db)
-            
+
+            # Set degraded mode globals
+            DB_AVAILABLE = True
+            DB_ERROR_TYPE = None
+
             return client
             
         except (ServerSelectionTimeoutError, ConnectionFailure) as e:
@@ -67,11 +79,32 @@ def connect_to_db_with_retry(retries=5, delay=2):
                 logger.info(f"Retrying in {delay} seconds...")
                 time.sleep(delay)
             else:
+                # Set degraded mode
+                DB_AVAILABLE = False
+                if "Authentication failed" in str(e):
+                    DB_ERROR_TYPE = "auth"
+                elif isinstance(e, ServerSelectionTimeoutError):
+                    DB_ERROR_TYPE = "dns"
+                elif isinstance(e, ConnectionFailure):
+                    DB_ERROR_TYPE = "network"
+                else:
+                    DB_ERROR_TYPE = "unknown"
                 logger.error("❌ Failed to connect to MongoDB after all retries")
-                raise RuntimeError(f"Failed to connect to MongoDB after {retries} attempts: {e}")
+                break  # Exit the loop
         except Exception as e:
             logger.error(f"Unexpected error connecting to MongoDB: {e}")
-            raise RuntimeError(f"Unexpected error connecting to MongoDB: {e}")
+            DB_AVAILABLE = False
+            DB_ERROR_TYPE = "unknown"
+            break
+
+    # Handle degraded mode based on environment
+    if not DB_AVAILABLE:
+        if ENV == "production":
+            raise RuntimeError(f"Database connection failed in production mode. Error type: {DB_ERROR_TYPE}")
+        else:
+            logger.warning(f"Starting in degraded mode (ENV={ENV}). Database unavailable. Error type: {DB_ERROR_TYPE}")
+    else:
+        logger.info("Database connection successful")
 
 def _create_indexes(database):
     """Create indexes for better performance"""
@@ -94,6 +127,8 @@ def get_db():
     """
     Returns the global db object. Use this inside your routes/services.
     """
+    if not DB_AVAILABLE:
+        raise HTTPException(status_code=503, detail=f"Database unavailable in degraded mode. Error type: {DB_ERROR_TYPE}")
     if db is None:
         raise RuntimeError("Database is not initialized. Did you call connect_to_db() on startup?")
     return db
@@ -111,3 +146,14 @@ def close_db():
             logger.warning(f"Error closing database connection: {e}")
         finally:
             db = None
+
+def get_db_status():
+    """
+    Returns database status for health checks.
+    """
+    return {
+        "db_connected": DB_AVAILABLE,
+        "degraded_mode": not DB_AVAILABLE,
+        "env": ENV,
+        "db_error_type": DB_ERROR_TYPE
+    }

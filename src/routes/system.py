@@ -6,7 +6,7 @@ import sys
 import time
 import os
 from ..logger import ksml_logger
-from ..database import get_db
+from ..database import get_db, get_db_status
 from ..schemas.response import APIResponse
 
 router = APIRouter(prefix="/system", tags=["system"])
@@ -22,25 +22,29 @@ def get_uptime():
 async def health():
     """
     Check system health and return status information.
-    
+
     Returns:
     - **success**: Boolean indicating success
     - **message**: Status message
-    - **data**: Contains uptime and version
+    - **data**: Contains uptime, version, and database status
     """
     # Calculate uptime
     uptime = get_uptime()
     version = "v3"
-    
+
+    # Get database status
+    db_status = get_db_status()
+
     # Log the health check using KSML
     ksml_logger.log_system_health("ok")
-    
+
     return APIResponse(
         success=True,
-        message="System is healthy",
+        message="System health check",
         data={
             "uptime": f"{uptime:.2f} seconds",
-            "version": version
+            "version": version,
+            **db_status
         }
     )
 

@@ -123,10 +123,12 @@ curl -X POST https://ai-agent-x2iw.onrender.com/agent/ \
 
 # Test health endpoint
 curl https://ai-agent-x2iw.onrender.com/system/health
+# Expected response includes: db_connected, degraded_mode, env, db_error_type
 
-# Test registration webhook
-curl -X POST https://ai-agent-x2iw.onrender.com/admin/webhook/hackaverse/registration \
+# Test team registration
+curl -X POST https://ai-agent-x2iw.onrender.com/admin/registration \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: production_secret_key_2024" \
   -d '{"team_name":"Test Team","members":["Alice","Bob"],"project_title":"Test Project"}'
 ```
 
