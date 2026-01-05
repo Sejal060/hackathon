@@ -9,7 +9,7 @@ from ..logger import ksml_logger
 from ..database import get_db, get_db_status
 from ..schemas.response import APIResponse
 
-router = APIRouter(prefix="/system", tags=["system"])
+router = APIRouter(tags=["system"])
 
 # Track application start time for uptime calculation
 START_TIME = time.time()

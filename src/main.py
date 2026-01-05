@@ -155,7 +155,7 @@ from .routes.mcp import router as mcp_router
 
 app.include_router(agent_router)
 app.include_router(admin_router)
-app.include_router(system_router)
+app.include_router(system_router, prefix="/system")
 app.include_router(judge_router)
 app.include_router(workflows_router)
 app.include_router(langgraph_router)
