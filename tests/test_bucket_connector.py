@@ -36,37 +36,37 @@ class TestBucketConnector(unittest.TestCase):
         import shutil
         shutil.rmtree(self.test_dir, ignore_errors=True)
     
-    @patch('src.bucket_connector.client')
-    @patch('src.bucket_connector.db')
-    def test_relay_to_bucket_success(self, mock_db, mock_client):
+    @patch('src.bucket_connector.get_db')
+    def test_relay_to_bucket_success(self, mock_get_db):
         """Test that relay_to_bucket successfully inserts data into MongoDB"""
         # Mock successful MongoDB connection and insertion
-        mock_client.server_info.return_value = True
+        mock_db = MagicMock()
         mock_logs_collection = MagicMock()
         mock_db.logs = mock_logs_collection
-        
+        mock_get_db.return_value = mock_db
+
         # Act
         result = relay_to_bucket(self.test_log_data)
-        
+
         # Assert
         mock_logs_collection.insert_one.assert_called_once()
         self.assertEqual(result, "Log relayed successfully")
     
-    @patch('src.bucket_connector.client')
-    @patch('src.bucket_connector.db')
-    def test_relay_to_bucket_with_existing_timestamp(self, mock_db, mock_client):
+    @patch('src.bucket_connector.get_db')
+    def test_relay_to_bucket_with_existing_timestamp(self, mock_get_db):
         """Test that relay_to_bucket preserves existing timestamp"""
         # Mock successful MongoDB connection and insertion
-        mock_client.server_info.return_value = True
+        mock_db = MagicMock()
         mock_logs_collection = MagicMock()
         mock_db.logs = mock_logs_collection
-        
+        mock_get_db.return_value = mock_db
+
         # Test data with existing timestamp
         log_data_with_timestamp = self.test_log_data.copy()
-        
+
         # Act
         result = relay_to_bucket(log_data_with_timestamp)
-        
+
         # Assert
         mock_logs_collection.insert_one.assert_called_once()
         # Get the argument passed to insert_one
@@ -75,22 +75,22 @@ class TestBucketConnector(unittest.TestCase):
         self.assertEqual(inserted_data["timestamp"], "2025-01-01T12:00:00Z")
         self.assertEqual(result, "Log relayed successfully")
     
-    @patch('src.bucket_connector.client')
-    @patch('src.bucket_connector.db')
-    def test_relay_to_bucket_with_missing_timestamp(self, mock_db, mock_client):
+    @patch('src.bucket_connector.get_db')
+    def test_relay_to_bucket_with_missing_timestamp(self, mock_get_db):
         """Test that relay_to_bucket adds timestamp when missing"""
         # Mock successful MongoDB connection and insertion
-        mock_client.server_info.return_value = True
+        mock_db = MagicMock()
         mock_logs_collection = MagicMock()
         mock_db.logs = mock_logs_collection
-        
+        mock_get_db.return_value = mock_db
+
         # Test data without timestamp
         log_data_no_timestamp = self.test_log_data.copy()
         del log_data_no_timestamp["timestamp"]
-        
+
         # Act
         result = relay_to_bucket(log_data_no_timestamp)
-        
+
         # Assert
         mock_logs_collection.insert_one.assert_called_once()
         # Get the argument passed to insert_one
@@ -99,55 +99,60 @@ class TestBucketConnector(unittest.TestCase):
         self.assertIn("timestamp", inserted_data)
         self.assertEqual(result, "Log relayed successfully")
     
-    @patch('src.bucket_connector.client')
-    @patch('src.bucket_connector.db')
-    def test_relay_to_bucket_mongodb_failure(self, mock_db, mock_client):
+    @patch('src.bucket_connector.get_db')
+    def test_relay_to_bucket_mongodb_failure(self, mock_get_db):
         """Test that relay_to_bucket handles MongoDB insertion failure"""
         # Mock MongoDB connection success but insertion failure
-        mock_client.server_info.return_value = True
+        mock_db = MagicMock()
         mock_logs_collection = MagicMock()
         mock_logs_collection.insert_one.side_effect = Exception("MongoDB insertion failed")
         mock_db.logs = mock_logs_collection
-        
+        mock_get_db.return_value = mock_db
+
         # Act
         result = relay_to_bucket(self.test_log_data)
-        
+
         # Assert
         mock_logs_collection.insert_one.assert_called_once()
-        self.assertIn("Error relaying log", result)
-        self.assertIn("MongoDB insertion failed", result)
+        self.assertIn("Log relayed to fallback file", result)
+        self.assertIn("MongoDB error", result)
     
-    @patch('src.bucket_connector.client', None)
-    @patch('src.bucket_connector.db', None)
+    @patch('src.bucket_connector.get_db')
     @patch('builtins.open')
-    def test_relay_to_bucket_no_mongodb_connection(self, mock_open):
+    def test_relay_to_bucket_no_mongodb_connection(self, mock_open, mock_get_db):
         """Test that relay_to_bucket falls back to file logging when MongoDB is unavailable"""
+        # Mock get_db to raise exception
+        mock_get_db.side_effect = Exception("MongoDB connection failed")
+
         # Setup mock for file operations
         mock_file = MagicMock()
         mock_open.return_value.__enter__.return_value = mock_file
-        
+
         # Act
         result = relay_to_bucket(self.test_log_data)
-        
+
         # Assert
         mock_open.assert_called_once_with("bucket_fallback.log", "a")
         mock_file.write.assert_called_once()
         self.assertIn("Log relayed to fallback file", result)
     
-    @patch('src.bucket_connector.client', None)
-    @patch('src.bucket_connector.db', None)
+    @patch('src.bucket_connector.get_db')
     @patch('builtins.open')
-    def test_relay_to_bucket_fallback_failure(self, mock_open):
+    def test_relay_to_bucket_fallback_failure(self, mock_open, mock_get_db):
         """Test that relay_to_bucket handles fallback file logging failure"""
+        # Mock get_db to raise exception
+        mock_get_db.side_effect = Exception("MongoDB connection failed")
+
         # Mock file logging failure
         mock_open.side_effect = Exception("File write failed")
-        
+
         # Act
         result = relay_to_bucket(self.test_log_data)
-        
+
         # Assert
         mock_open.assert_called_once_with("bucket_fallback.log", "a")
-        self.assertIn("Error relaying log to fallback", result)
+        self.assertIn("Error relaying log", result)
+        self.assertIn("File fallback error", result)
         self.assertIn("File write failed", result)
 
 if __name__ == '__main__':

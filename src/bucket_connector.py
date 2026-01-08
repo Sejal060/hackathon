@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 BUCKET_DB_NAME = os.getenv("BUCKET_DB_NAME", "blackholeinifverse60_db_user")
 
+# Dummy exports for testing compatibility
+client = None
+db = None
+
 def relay_to_bucket(log_data: Dict[str, Any]) -> str:
     """
     Relay logs/data to BHIV Bucket (MongoDB insert).

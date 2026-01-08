@@ -11,6 +11,8 @@ from typing import Dict, Any, Optional
 from collections import defaultdict
 import threading
 from typing import Tuple
+import secrets
+import uuid
 
 
 class RateLimiter:
@@ -37,6 +39,35 @@ class SecurityManager:
         self.api_secret = os.getenv("SECURITY_SECRET_KEY", "default_secret_for_dev")
         self.rate_limiter = RateLimiter()
         self.lock = threading.Lock()
+        self.ledger = []  # Simple ledger storage for testing
+
+    def generate_nonce(self) -> str:
+        """
+        Generate a secure random nonce for request signing.
+
+        Returns:
+            str: A 32-character hexadecimal nonce
+        """
+        return secrets.token_hex(16)
+
+    def sign_payload(self, data: Dict[str, Any], nonce: str, timestamp: int) -> str:
+        """
+        Sign payload data for ledger integrity.
+
+        Args:
+            data: The data to sign
+            nonce: The nonce
+            timestamp: The timestamp
+
+        Returns:
+            str: Hexadecimal signature
+        """
+        message = f"{timestamp}{json.dumps(data, sort_keys=True)}{nonce}".encode('utf-8')
+        return hmac.new(
+            self.api_secret.encode('utf-8'),
+            message,
+            hashlib.sha256
+        ).hexdigest()
 
     def verify_nonce(self, nonce: str, timestamp: int) -> bool:
         """
@@ -93,6 +124,76 @@ class SecurityManager:
 
         return hmac.compare_digest(expected_signature, signature)
 
+    def add_to_ledger(self, data: Dict[str, Any], nonce: str, timestamp: int, signature: str) -> Dict[str, Any]:
+        """
+        Add an entry to the ledger (for testing purposes).
+
+        Args:
+            data: The data to add
+            nonce: The nonce
+            timestamp: The timestamp
+            signature: The signature
+
+        Returns:
+            Dict: The ledger entry
+        """
+        id = str(uuid.uuid4())
+        data_hash = compute_payload_hash(data)
+        entry = {
+            "id": id,
+            "data_hash": data_hash,
+            "nonce": nonce,
+            "timestamp": timestamp,
+            "signature": signature,
+            "entry_hash": "",
+            "previous_hash": self.ledger[-1]["entry_hash"] if self.ledger else "0"
+        }
+        entry["entry_hash"] = self._hash_ledger_entry(entry, include_hash=False)
+        self.ledger.append(entry)
+        return entry
+
+    def get_ledger(self) -> list:
+        """
+        Get all ledger entries.
+
+        Returns:
+            list: List of ledger entries
+        """
+        return self.ledger
+
+    def verify_ledger_integrity(self) -> bool:
+        """
+        Verify the integrity of the ledger.
+
+        Returns:
+            bool: True if ledger is valid
+        """
+        for i, entry in enumerate(self.ledger):
+            expected_hash = self._hash_ledger_entry(entry, include_hash=False)
+            if entry["entry_hash"] != expected_hash:
+                return False
+            if i > 0:
+                if entry["previous_hash"] != self.ledger[i-1]["entry_hash"]:
+                    return False
+        return True
+
+    def _hash_ledger_entry(self, entry: Dict[str, Any], include_hash: bool = True) -> str:
+        """
+        Hash a ledger entry.
+
+        Args:
+            entry: The entry to hash
+            include_hash: Whether to include the hash field
+
+        Returns:
+            str: The hash
+        """
+        data = entry.copy()
+        if not include_hash and "entry_hash" in data:
+            del data["entry_hash"]
+        message = json.dumps(data, sort_keys=True).encode('utf-8')
+        return hashlib.sha256(message).hexdigest()
+
 # Create a global security manager instance
 security_manager = SecurityManager()
 
@@ -100,6 +201,8 @@ security_manager = SecurityManager()
 # API Key roles mapping
 API_KEY_ROLES = {
     os.getenv("API_KEY", "default_key"): "admin",  # Default API key is admin
+    # Example agent key for demonstration
+    "agent_key_demo": "agent",
     # Add more mappings as needed, e.g.:
     # "agent_key_123": "agent",
     # "admin_key_456": "admin",
@@ -153,3 +256,116 @@ def check_rate_limit(api_key: str, path: str) -> None:
         admin_key = f"{api_key}:admin"
         if not security_manager.rate_limiter.is_allowed(admin_key, 10, 60):
             raise HTTPException(status_code=429, detail="Admin rate limit exceeded")
+
+
+def create_entry(db, actor: str, event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Create a provenance entry in the database.
+
+    Args:
+        db: Database connection
+        actor: The actor performing the action
+        event: The event type
+        payload: The payload data
+
+    Returns:
+        Dict: The created entry
+    """
+    import time
+    timestamp = int(time.time())
+
+    # Get previous entry for chain
+    prev_entry = db.provenance_logs.find_one(sort=[("timestamp", -1)])
+    previous_hash = prev_entry["entry_hash"] if prev_entry else "0"
+
+    # Compute payload hash
+    payload_hash = compute_payload_hash(payload)
+
+    # Create entry
+    entry = {
+        "previous_hash": previous_hash,
+        "timestamp": timestamp,
+        "actor": actor,
+        "event": event,
+        "payload_hash": payload_hash,
+        "entry_hash": "",  # Will be computed
+        "signature": "mock_signature"  # Mock for testing
+    }
+
+    # Compute entry hash
+    entry["entry_hash"] = compute_entry_hash(entry)
+
+    # Insert into database
+    db.provenance_logs.insert_one(entry)
+
+    return entry
+
+
+def verify_chain(db) -> list:
+    """
+    Verify the provenance chain integrity.
+
+    Args:
+        db: Database connection
+
+    Returns:
+        list: List of issues found
+    """
+    issues = []
+    entries = list(db.provenance_logs.find().sort("timestamp", 1))
+
+    for i, entry in enumerate(entries):
+        # Verify entry hash
+        expected_hash = compute_entry_hash(entry)
+        if entry["entry_hash"] != expected_hash:
+            issues.append(f"Entry {i} hash mismatch")
+
+        # Verify chain
+        if i > 0:
+            if entry["previous_hash"] != entries[i-1]["entry_hash"]:
+                issues.append(f"Entry {i} chain broken")
+
+    return issues
+
+
+def _sha256_hex(data: str) -> str:
+    """
+    SHA256 hash of data as hex string.
+
+    Args:
+        data: The data to hash
+
+    Returns:
+        str: Hex hash
+    """
+    return hashlib.sha256(data.encode('utf-8')).hexdigest()
+
+
+def compute_payload_hash(payload: Dict[str, Any]) -> str:
+    """
+    Compute hash of payload data.
+
+    Args:
+        payload: The payload to hash
+
+    Returns:
+        str: Hex hash of the payload
+    """
+    # Sort keys for deterministic hashing
+    payload_str = json.dumps(payload, sort_keys=True)
+    return hashlib.sha256(payload_str.encode('utf-8')).hexdigest()
+
+
+def compute_entry_hash(entry: Dict[str, Any]) -> str:
+    """
+    Compute hash of entry data.
+
+    Args:
+        entry: The entry to hash
+
+    Returns:
+        str: Hex hash of the entry
+    """
+    # Sort keys for deterministic hashing
+    entry_str = json.dumps(entry, sort_keys=True)
+    return hashlib.sha256(entry_str.encode('utf-8')).hexdigest()

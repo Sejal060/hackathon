@@ -38,14 +38,15 @@ class TestCoreConnector(unittest.TestCase):
     def test_connect_to_core_timeout(self, mock_post):
         """Test connection timeout to core"""
         # Mock timeout exception
-        mock_post.side_effect = Exception("Timeout")
-        
+        from requests.exceptions import Timeout
+        mock_post.side_effect = Timeout("Timeout")
+
         # Test data
         payload = {"test": "data"}
-        
+
         # Call the function
         result = connect_to_core(payload)
-        
+
         # Verify the result is a mock response for timeout
         self.assertIn("status", result)
         self.assertIn("timeout", result["status"])
@@ -55,14 +56,15 @@ class TestCoreConnector(unittest.TestCase):
     def test_connect_to_core_connection_error(self, mock_post):
         """Test connection error to core"""
         # Mock connection error
-        mock_post.side_effect = Exception("Connection error")
-        
+        from requests.exceptions import ConnectionError
+        mock_post.side_effect = ConnectionError("Connection error")
+
         # Test data
         payload = {"test": "data"}
-        
+
         # Call the function
         result = connect_to_core(payload)
-        
+
         # Verify the result is a mock response for connection error
         self.assertIn("status", result)
         self.assertIn("connection_error", result["status"])
@@ -72,14 +74,15 @@ class TestCoreConnector(unittest.TestCase):
     def test_connect_to_core_request_error(self, mock_post):
         """Test request error to core"""
         # Mock request error
-        mock_post.side_effect = Exception("Request error")
-        
+        from requests.exceptions import RequestException
+        mock_post.side_effect = RequestException("Request error")
+
         # Test data
         payload = {"test": "data"}
-        
+
         # Call the function
         result = connect_to_core(payload)
-        
+
         # Verify the result is a mock response for request error
         self.assertIn("status", result)
         self.assertIn("request_error", result["status"])

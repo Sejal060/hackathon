@@ -53,9 +53,21 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                             status_code=403,
                             content={"detail": "Agent or admin access required"}
                         )
+                    if request.url.path.startswith("/workflows") and role not in ["agent", "admin"]:
+                        return JSONResponse(
+                            status_code=403,
+                            content={"detail": "Agent or admin access required for workflows"}
+                        )
+            else:
+                # Require API key for workflows
+                if request.url.path.startswith("/workflows"):
+                    return JSONResponse(
+                        status_code=401,
+                        content={"detail": "API Key required for workflows"}
+                    )
 
             # Perform optional security checks
-            await self._perform_optional_security_checks(request)
+            consumed_body = await self._perform_optional_security_checks(request)
 
         except HTTPException as e:
             return JSONResponse(
@@ -68,16 +80,36 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 content={"detail": f"Security validation failed: {str(e)}"}
             )
 
+        # Restore the body if it was consumed
+        if consumed_body:
+            request._body = consumed_body
+
         # Continue with the request
         response = await call_next(request)
         return response
+
+    def _requires_advanced_security(self, request: Request) -> bool:
+        """
+        Determine if the request requires advanced security checks.
+
+        Args:
+            request: The incoming request
+
+        Returns:
+            bool: True if advanced security is required
+        """
+        # Require advanced security for workflow endpoints
+        return request.url.path.startswith("/workflows")
     
-    async def _perform_optional_security_checks(self, request: Request):
+    async def _perform_optional_security_checks(self, request: Request) -> Optional[bytes]:
         """
         Perform optional security checks on the request
 
         Args:
             request: Incoming request
+
+        Returns:
+            The consumed body if any, to restore it
         """
         # Extract security headers
         nonce = request.headers.get("X-Nonce")
@@ -123,6 +155,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             # When security not enforced, validate only if headers provided
             validate_request_signing(timestamp, request_body, signature)
             validate_replay_protection(nonce, timestamp)
+
+        # Return the body to restore it if consumed
+        return body if body else None
 
 # Security header dependencies for specific endpoints
 async def get_security_headers(

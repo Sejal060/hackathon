@@ -17,26 +17,26 @@ def test_security_manager():
     message = f"{timestamp}{body}".encode('utf-8')
     signature = hmac.new(secret.encode(), message, hashlib.sha256).hexdigest()
     assert sm.verify_signature(timestamp, body, signature), "Valid signature should pass"
-    print("✓ Valid signature accepted")
+    print("PASS: Valid signature accepted")
 
     # Test verify_signature_invalid
     assert not sm.verify_signature(timestamp, body, "invalid_signature"), "Invalid signature should fail"
-    print("✓ Invalid signature rejected")
+    print("PASS: Invalid signature rejected")
 
     # Test verify_nonce_valid
     nonce = "test_nonce"
     timestamp_int = int(time.time())
     assert sm.verify_nonce(nonce, timestamp_int), "Valid nonce should pass"
-    print("✓ Valid nonce accepted")
+    print("PASS: Valid nonce accepted")
 
     # Test verify_nonce_reused
     assert not sm.verify_nonce(nonce, timestamp_int), "Reused nonce should fail"
-    print("✓ Reused nonce rejected")
+    print("PASS: Reused nonce rejected")
 
     # Test verify_nonce_old_timestamp
     old_timestamp = int(time.time()) - 400
     assert not sm.verify_nonce("new_nonce", old_timestamp), "Old timestamp should fail"
-    print("✓ Old timestamp rejected")
+    print("PASS: Old timestamp rejected")
 
 
 def test_validation_functions():
@@ -45,17 +45,17 @@ def test_validation_functions():
     # Test validate_request_signing_missing_headers (when not enforced)
     try:
         validate_request_signing(None, '{"test": "data"}', None)
-        print("✓ Missing signature headers allowed when not enforced")
+        print("PASS: Missing signature headers allowed when not enforced")
     except:
-        print("✗ Missing signature headers should be allowed when not enforced")
+        print("FAIL: Missing signature headers should be allowed when not enforced")
         raise
 
     # Test validate_replay_protection_missing_headers (when not enforced)
     try:
         validate_replay_protection(None, None)
-        print("✓ Missing nonce headers allowed when not enforced")
+        print("PASS: Missing nonce headers allowed when not enforced")
     except:
-        print("✗ Missing nonce headers should be allowed when not enforced")
+        print("FAIL: Missing nonce headers should be allowed when not enforced")
         raise
 
 
@@ -65,24 +65,31 @@ def test_rate_limiting():
     # Test under limit
     try:
         check_rate_limit("test_key", "/agent/test")
-        print("✓ Rate limit under threshold allowed")
+        print("PASS: Rate limit under threshold allowed")
     except:
-        print("✗ Rate limit under threshold should be allowed")
+        print("FAIL: Rate limit under threshold should be allowed")
         raise
 
 
 def test_role_mapping():
     print("\nTesting role mapping...")
 
-    # Test default admin role
-    role = get_api_key_role("default_key")
-    assert role == "admin", "Default key should have admin role"
-    print("✓ Default API key has admin role")
+    # Test admin role (using the actual API_KEY from environment)
+    import os
+    admin_key = os.getenv("API_KEY", "default_key")
+    role = get_api_key_role(admin_key)
+    assert role == "admin", f"API_KEY '{admin_key}' should have admin role"
+    print("PASS: API_KEY has admin role")
+
+    # Test agent role
+    role = get_api_key_role("agent_key_demo")
+    assert role == "agent", "Agent key should have agent role"
+    print("PASS: Agent API key has agent role")
 
     # Test nonexistent key
     role = get_api_key_role("nonexistent_key")
     assert role is None, "Nonexistent key should return None"
-    print("✓ Nonexistent key returns None")
+    print("PASS: Nonexistent key returns None")
 
 
 def main():
@@ -94,10 +101,10 @@ def main():
         test_rate_limiting()
         test_role_mapping()
 
-        print("\n🎉 All security tests passed!")
+        print("\nSUCCESS: All security tests passed!")
         return True
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\nFAILED: Test failed: {e}")
         return False
 
 

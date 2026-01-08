@@ -168,9 +168,14 @@ curl -X POST https://ai-agent-x2iw.onrender.com/admin/registration \
 - **Response**: 429 Too Many Requests on limit exceeded
 
 #### Role-Scoped API Keys
-- **Agent Role**: Access to `/agent/*` endpoints
+- **Agent Role**: Access to `/agent/*` endpoints only
 - **Admin Role**: Access to `/admin/*` and `/agent/*` endpoints
 - **Default**: API key from `API_KEY` env var has admin role
+- **Example Agent Key**: `agent_key_demo` (for testing agent access)
+- **Access Rules**:
+  - `/admin/*` routes require admin role (403 Forbidden for agent role)
+  - `/agent/*` routes allow both admin and agent roles
+  - No API key required for public routes (`/system/health`, `/ping`, etc.)
 
 #### Example Signed Request
 ```bash

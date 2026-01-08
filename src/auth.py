@@ -9,7 +9,7 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 async def get_api_key(api_key_header: str = Depends(api_key_header)):
     """Validate API key for protected endpoints"""
-    if api_key_header == os.getenv("API_KEY"):
+    if api_key_header == os.getenv("API_KEY", "default_key"):
         return api_key_header
     else:
         raise HTTPException(

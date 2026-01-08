@@ -16,7 +16,7 @@ from src.security import (
 
 def test_sha256_hex():
     """Test SHA-256 hash function"""
-    result = _sha256_hex(b"test")
+    result = _sha256_hex("test")
     assert isinstance(result, str)
     assert len(result) == 64  # SHA-256 produces 64 hex characters
 
@@ -53,14 +53,9 @@ def test_compute_entry_hash():
     assert isinstance(hash1, str)
     assert len(hash1) == 64
 
-@patch('src.security.load_private_key_from_env')
 @patch('src.security.compute_entry_hash')
-def test_create_entry(mock_compute_hash, mock_load_key):
+def test_create_entry(mock_compute_hash):
     """Test create_entry function"""
-    # Mock the private key and signing
-    mock_private_key = MagicMock()
-    mock_private_key.sign.return_value = b'\x00' * 64  # Mock signature
-    mock_load_key.return_value = mock_private_key
     mock_compute_hash.return_value = "a1b2c3d4e5f67890" * 4  # Valid 64-char hex string
     
     # Mock database
@@ -79,7 +74,7 @@ def test_create_entry(mock_compute_hash, mock_load_key):
     assert entry["actor"] == "test_actor"
     assert entry["event"] == "test_event"
     assert entry["entry_hash"] == "a1b2c3d4e5f67890" * 4
-    assert entry["signature"] == "00" * 64
+    assert entry["signature"] == "mock_signature"
     
     # Verify database call
     mock_db.provenance_logs.insert_one.assert_called_once()

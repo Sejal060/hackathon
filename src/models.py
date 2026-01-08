@@ -38,6 +38,10 @@ class LogEntry(BaseModel):
     level: str
     message: str
 
+class LogResponse(BaseModel):
+    logs: List[LogEntry]
+    count: int
+
 class JudgeRequest(BaseModel):
     submission_text: str
     team_id: Optional[str] = None

@@ -11,12 +11,13 @@ def test_nonce_generation_and_verification():
     """Test nonce generation and verification"""
     # Generate a nonce
     nonce = security_manager.generate_nonce()
+    timestamp = int(time.time())
     
     # Verify the nonce is valid
-    assert security_manager.verify_nonce(nonce) == True
+    assert security_manager.verify_nonce(nonce, timestamp) == True
     
     # Verify the same nonce is invalid after use (replay attack protection)
-    assert security_manager.verify_nonce(nonce) == False
+    assert security_manager.verify_nonce(nonce, timestamp) == False
 
 def test_signature_generation_and_verification():
     """Test signature generation and verification"""
@@ -29,10 +30,10 @@ def test_signature_generation_and_verification():
     signature = security_manager.sign_payload(data, nonce, timestamp)
     
     # Verify signature
-    assert security_manager.verify_signature(data, nonce, timestamp, signature) == True
-    
+    assert security_manager.verify_signature(str(timestamp), json.dumps(data, sort_keys=True) + nonce, signature) == True
+
     # Verify invalid signature fails
-    assert security_manager.verify_signature(data, nonce, timestamp, "invalid_signature") == False
+    assert security_manager.verify_signature(str(timestamp), json.dumps(data, sort_keys=True) + nonce, "invalid_signature") == False
 
 def test_ledger_chaining():
     """Test ledger chaining functionality"""
@@ -64,7 +65,7 @@ def test_ledger_chaining():
     assert security_manager.verify_ledger_integrity() == True
     
     # Verify chaining
-    assert actual_entry1["previous_hash"] == None
+    assert actual_entry1["previous_hash"] == "0"
     assert actual_entry2["previous_hash"] == actual_entry1["entry_hash"]
 
 def test_security_middleware_headers():

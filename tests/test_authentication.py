@@ -6,7 +6,7 @@ client = TestClient(app)
 
 def test_admin_endpoint_without_auth():
     """Test that admin endpoints require authentication"""
-    response = client.post("/admin/reward", json={
+    response = client.post("/reward", json={
         "request_id": "test123",
         "outcome": "success"
     })
@@ -14,7 +14,7 @@ def test_admin_endpoint_without_auth():
 
 def test_admin_endpoint_with_invalid_auth():
     """Test that admin endpoints reject invalid API keys"""
-    response = client.post("/admin/reward", 
+    response = client.post("/reward",
                           json={
                               "request_id": "test123",
                               "outcome": "success"

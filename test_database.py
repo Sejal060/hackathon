@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 load_dotenv()
 
 # Import the database module
-from database import connect_to_db, get_db, close_db
+from database import connect_to_db_with_retry, get_db, close_db
 
 def test_database_connection():
     """Test the database connection."""
@@ -19,7 +19,7 @@ def test_database_connection():
         
         # Connect to the database
         print("Connecting to database...")
-        connect_to_db()
+        connect_to_db_with_retry()
         
         # Get the database instance
         db = get_db()

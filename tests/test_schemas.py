@@ -1,5 +1,6 @@
 import pytest
 from src.schemas import AgentRequest, RewardRequest, LogResponse
+from src.models import LogEntry
 
 def test_agent_request_creation():
     """Test AgentRequest model creation and validation"""
@@ -23,51 +24,41 @@ def test_reward_request_creation():
     """Test RewardRequest model creation and validation"""
     # Test valid creation
     reward_request = RewardRequest(
-        team_id="team_42",
-        score=3.5,
-        feedback="Good work!"
+        request_id="req_42",
+        outcome="success"
     )
-    
-    assert reward_request.team_id == "team_42"
-    assert reward_request.score == 3.5
-    assert reward_request.feedback == "Good work!"
-    
-    # Test creation without optional feedback
-    reward_request_no_feedback = RewardRequest(
-        team_id="team_42",
-        score=3.5
-    )
-    
-    assert reward_request_no_feedback.team_id == "team_42"
-    assert reward_request_no_feedback.score == 3.5
-    assert reward_request_no_feedback.feedback is None
-    
+
+    assert reward_request.request_id == "req_42"
+    assert reward_request.outcome == "success"
+
     # Test validation with missing required fields
     with pytest.raises(ValueError):
-        RewardRequest(score=3.5)  # Missing team_id
-    
+        RewardRequest(outcome="success")  # Missing request_id
+
     with pytest.raises(ValueError):
-        RewardRequest(team_id="test")  # Missing score
+        RewardRequest(request_id="test")  # Missing outcome
 
 def test_log_response_creation():
     """Test LogResponse model creation and validation"""
     # Test valid creation
-    log_response = LogResponse(
+    log_entry = LogEntry(
         timestamp="2025-01-01T12:00:00Z",
         message="Test log message",
         level="INFO"
     )
-    
-    assert log_response.timestamp == "2025-01-01T12:00:00Z"
-    assert log_response.message == "Test log message"
-    assert log_response.level == "INFO"
-    
+    log_response = LogResponse(
+        logs=[log_entry],
+        count=1
+    )
+
+    assert log_response.logs[0].timestamp == "2025-01-01T12:00:00Z"
+    assert log_response.logs[0].message == "Test log message"
+    assert log_response.logs[0].level == "INFO"
+    assert log_response.count == 1
+
     # Test validation with missing required fields
     with pytest.raises(ValueError):
-        LogResponse(message="test", level="INFO")  # Missing timestamp
-    
+        LogResponse(logs=[log_entry])  # Missing count
+
     with pytest.raises(ValueError):
-        LogResponse(timestamp="2025-01-01T12:00:00Z", level="INFO")  # Missing message
-        
-    with pytest.raises(ValueError):
-        LogResponse(timestamp="2025-01-01T12:00:00Z", message="test")  # Missing level
+        LogResponse(count=1)  # Missing logs
