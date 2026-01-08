@@ -30,11 +30,17 @@ class TeamRegistrationRequest(BaseModel):
     team_name: str
     members: List[str]
     project_title: str
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class MentorBotRequest(BaseModel):
     team_id: str
     prompt: str
     metadata: Optional[Dict[str, Any]] = {}
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class WorkflowRunRequest(BaseModel):
     name: str

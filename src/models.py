@@ -6,21 +6,33 @@ class TeamRegistration(BaseModel):
     team_name: str
     members: List[str]
     project_title: str
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class AgentRequest(BaseModel):
     team_id: str
     prompt: str
     metadata: Dict = {}
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class RewardRequest(BaseModel):
     request_id: str
     outcome: str
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class LogRequest(BaseModel):
     timestamp: str
     level: str
     message: str
     additional_data: Optional[Dict[str, Any]] = None
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class AgentResponse(BaseModel):
     processed_input: str
@@ -45,6 +57,9 @@ class LogResponse(BaseModel):
 class JudgeRequest(BaseModel):
     submission_text: str
     team_id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    event_id: Optional[str] = None
+    workspace_id: Optional[str] = None
 
 class JudgeResponse(BaseModel):
     clarity: int

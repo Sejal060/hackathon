@@ -148,5 +148,41 @@ uvicorn src.main:app --reload
 - Add more detailed logging for production monitoring
 - Consider adding database connection pooling metrics
 
+## Failure Handling & Retry Policy
+
+### Timeout Behavior
+- **Database Connection Timeout**: 5 seconds for initial connection attempts
+- **Database Query Timeout**: 5 seconds for read/write operations
+- **HTTP Request Timeout**: 30 seconds for external API calls (e.g., BHIV Core communication)
+- **Health Check Timeout**: 5 seconds for system health verification
+
+### Retry Limits
+- **Database Connection Retries**: 5 attempts with 2-second delays between retries
+- **External API Retries**: 3 attempts with exponential backoff (1s, 2s, 4s)
+- **Bucket Relay Retries**: 2 attempts for log/event transmission failures
+
+### Distinction Between Recoverable vs Fatal Failures
+- **Recoverable Failures**:
+  - Temporary network timeouts (< 30s)
+  - Database connection drops (auto-reconnect enabled)
+  - Rate limiting (429 responses with retry-after header)
+  - External API temporary unavailability (5xx with retry-after)
+- **Fatal Failures**:
+  - Authentication failures (401/403)
+  - Invalid request data (400)
+  - Resource not found (404)
+  - Database authentication errors
+  - Configuration errors (missing required environment variables)
+
+### Error Response Codes
+- **400**: Bad Request - Invalid input data
+- **401**: Unauthorized - Missing/invalid API key or security headers
+- **403**: Forbidden - Insufficient permissions for requested operation
+- **404**: Not Found - Endpoint or resource does not exist
+- **409**: Conflict - Replay attack detected or nonce reuse
+- **429**: Too Many Requests - Rate limit exceeded
+- **500**: Internal Server Error - Unexpected system failures
+- **503**: Service Unavailable - Database unavailable in production
+
 ## Contact
 For issues or questions, refer to the integration notes in `INTEGRATION_NOTES.md` or contact the development team.

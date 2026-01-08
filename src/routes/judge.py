@@ -33,7 +33,10 @@ async def score_submission(request: JudgeRequest):
         intent="judging_request",
         actor=f"team_{request.team_id}" if request.team_id else "anonymous",
         context=f"Multi-agent judging request received for submission of length {len(request.submission_text)}",
-        outcome="received"
+        outcome="received",
+        tenant_id=request.tenant_id,
+        event_id=request.event_id,
+        workspace_id=request.workspace_id
     )
     
     # Evaluate the submission using multi-agent system
@@ -51,7 +54,10 @@ async def score_submission(request: JudgeRequest):
         actor="multi_agent_judging_engine",
         context=f"Multi-agent judging completed for team {request.team_id}",
         outcome="success",
-        additional_data={"consensus_score": evaluation_result["consensus_score"]}
+        additional_data={"consensus_score": evaluation_result["consensus_score"]},
+        tenant_id=request.tenant_id,
+        event_id=request.event_id,
+        workspace_id=request.workspace_id
     )
     
     # Return the structured response
@@ -84,7 +90,10 @@ async def submit_and_score(request: JudgeRequest):
         intent="submission_save_and_judge",
         actor=f"team_{request.team_id}" if request.team_id else "anonymous",
         context=f"Submission saved and multi-agent judging request received for submission of length {len(request.submission_text)}",
-        outcome="received"
+        outcome="received",
+        tenant_id=request.tenant_id,
+        event_id=request.event_id,
+        workspace_id=request.workspace_id
     )
     
     # Evaluate the submission using multi-agent system
@@ -102,7 +111,10 @@ async def submit_and_score(request: JudgeRequest):
         actor="multi_agent_judging_engine",
         context=f"Submission multi-agent judged for team {request.team_id}",
         outcome="success",
-        additional_data={"consensus_score": evaluation_result["consensus_score"]}
+        additional_data={"consensus_score": evaluation_result["consensus_score"]},
+        tenant_id=request.tenant_id,
+        event_id=request.event_id,
+        workspace_id=request.workspace_id
     )
     
     # Return the structured response with both submission and judging results

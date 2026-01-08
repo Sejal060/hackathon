@@ -32,7 +32,10 @@ class KSMLLogger:
         context: str,
         outcome: str,
         additional_data: Optional[Dict[str, Any]] = None,
-        timestamp: Optional[str] = None
+        timestamp: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        event_id: Optional[str] = None,
+        workspace_id: Optional[str] = None
     ) -> str:
         """
         Log a structured event following KSML format.
@@ -56,6 +59,12 @@ class KSMLLogger:
             "context": context,
             "outcome": outcome
         }
+        if tenant_id:
+            log_entry["tenant_id"] = tenant_id
+        if event_id:
+            log_entry["event_id"] = event_id
+        if workspace_id:
+            log_entry["workspace_id"] = workspace_id
         
         # Add additional data if provided
         if additional_data:
@@ -76,8 +85,14 @@ class KSMLLogger:
                 }
                 if additional_data:
                     payload["additional_data"] = additional_data
-                    
-                provenance_entry = create_entry(db, actor=actor, event=intent, payload=payload)
+                if tenant_id:
+                    payload["tenant_id"] = tenant_id
+                if event_id:
+                    payload["event_id"] = event_id
+                if workspace_id:
+                    payload["workspace_id"] = workspace_id
+
+                provenance_entry = create_entry(db, actor=actor, event=intent, payload=payload, event_id=event_id, outcome=outcome)
                 logger.info(f"Provenance entry created: {provenance_entry['entry_hash']}")
             except Exception as e:
                 logger.warning(f"Failed to create provenance entry: {e}")

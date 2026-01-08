@@ -258,7 +258,7 @@ def check_rate_limit(api_key: str, path: str) -> None:
             raise HTTPException(status_code=429, detail="Admin rate limit exceeded")
 
 
-def create_entry(db, actor: str, event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+def create_entry(db, actor: str, event: str, payload: Dict[str, Any], event_id: Optional[str] = None, outcome: Optional[str] = None) -> Dict[str, Any]:
     """
     Create a provenance entry in the database.
 
@@ -267,12 +267,22 @@ def create_entry(db, actor: str, event: str, payload: Dict[str, Any]) -> Dict[st
         actor: The actor performing the action
         event: The event type
         payload: The payload data
+        event_id: Optional event identifier
+        outcome: Optional outcome of the event
 
     Returns:
         Dict: The created entry
     """
     import time
     timestamp = int(time.time())
+
+    # Infer defaults
+    if not actor:
+        actor = "system"
+    if not outcome:
+        outcome = "unknown"
+    if not event_id:
+        event_id = f"{event}_{timestamp}"
 
     # Get previous entry for chain
     prev_entry = db.provenance_logs.find_one(sort=[("timestamp", -1)])
@@ -287,6 +297,8 @@ def create_entry(db, actor: str, event: str, payload: Dict[str, Any]) -> Dict[st
         "timestamp": timestamp,
         "actor": actor,
         "event": event,
+        "event_id": event_id,
+        "outcome": outcome,
         "payload_hash": payload_hash,
         "entry_hash": "",  # Will be computed
         "signature": "mock_signature"  # Mock for testing
