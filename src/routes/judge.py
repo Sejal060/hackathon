@@ -6,8 +6,12 @@ from ..judging.consensus import aggregate_consensus
 from ..logger import ksml_logger
 from ..auth import get_api_key
 from ..schemas.response import APIResponse
+from ..database import get_db
+from ..security import create_entry, compute_payload_hash
 from typing import Dict, Any
 import logging
+import hashlib
+import time
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -75,48 +79,129 @@ async def score_submission(request: JudgeRequest):
 async def submit_and_score(request: JudgeRequest):
     """
     Saves and scores a submission using the Multi-Agent AI Judging Engine.
-    
+
     - **submission_text**: The text to evaluate
     - **team_id**: Optional team ID for tracking
     """
     logger.info(f"Submit and score endpoint called for team {request.team_id}")
-    
-    # In a production environment, you would save the submission to a database here
-    # For now, we'll just log that the submission was received
-    logger.info(f"Submission saved for team {request.team_id}")
-    
-    # Log the judging request using KSML
+
+    # Compute submission hash
+    submission_hash = hashlib.sha256(request.submission_text.encode('utf-8')).hexdigest()
+    request.submission_hash = submission_hash
+
+    # Get database connection
+    db = get_db()
+
+    # Check if submission already exists
+    existing_submission = db.submissions.find_one({"submission_hash": submission_hash})
+    if existing_submission:
+        logger.info(f"Submission already exists with hash {submission_hash}")
+    else:
+        # Save submission to database
+        submission_doc = {
+            "submission_text": request.submission_text,
+            "team_id": request.team_id,
+            "submission_hash": submission_hash,
+            "tenant_id": request.tenant_id,
+            "event_id": request.event_id,
+            "workspace_id": request.workspace_id,
+            "timestamp": int(time.time())
+        }
+        db.submissions.insert_one(submission_doc)
+        logger.info(f"Submission saved for team {request.team_id} with hash {submission_hash}")
+
+    # Log the submission using KSML and create provenance
     ksml_logger.log_event(
-        intent="submission_save_and_judge",
+        intent="submission_save",
         actor=f"team_{request.team_id}" if request.team_id else "anonymous",
-        context=f"Submission saved and multi-agent judging request received for submission of length {len(request.submission_text)}",
-        outcome="received",
+        context=f"Submission saved with hash {submission_hash}",
+        outcome="success",
         tenant_id=request.tenant_id,
         event_id=request.event_id,
         workspace_id=request.workspace_id
     )
-    
+
+    # Create provenance entry for submission
+    create_entry(
+        db,
+        actor=f"team_{request.team_id}" if request.team_id else "anonymous",
+        event="submission_save",
+        payload={
+            "submission_hash": submission_hash,
+            "team_id": request.team_id,
+            "tenant_id": request.tenant_id,
+            "event_id": request.event_id,
+            "workspace_id": request.workspace_id
+        },
+        event_id=request.event_id,
+        outcome="success"
+    )
+
     # Evaluate the submission using multi-agent system
     evaluation_result = evaluate_submission_multi_agent({
         "submission_text": request.submission_text,
         "team_id": request.team_id
     })
-    
+
     # Extract consensus scores for the response
     consensus_scores = evaluation_result["criteria_scores"]
-    
+
+    # Determine version for judgment
+    existing_judgment = db.judgments.find_one(
+        {"submission_hash": submission_hash},
+        sort=[("version", -1)]
+    )
+    version = (existing_judgment["version"] + 1) if existing_judgment else 1
+
+    # Save judgment to database
+    judgment_doc = {
+        "submission_hash": submission_hash,
+        "team_id": request.team_id,
+        "clarity": consensus_scores.get("clarity", 0),
+        "quality": consensus_scores.get("tech_depth", 0),
+        "innovation": consensus_scores.get("innovation", 0),
+        "total_score": evaluation_result["consensus_score"],
+        "confidence": 0.9,
+        "trace": evaluation_result["reasoning_chain"],
+        "version": version,
+        "tenant_id": request.tenant_id,
+        "event_id": request.event_id,
+        "workspace_id": request.workspace_id,
+        "timestamp": int(time.time())
+    }
+    db.judgments.insert_one(judgment_doc)
+    logger.info(f"Judgment saved for submission {submission_hash}, version {version}")
+
     # Log the judging response
     ksml_logger.log_event(
-        intent="submission_judged",
+        intent="judgment_save",
         actor="multi_agent_judging_engine",
-        context=f"Submission multi-agent judged for team {request.team_id}",
+        context=f"Judgment saved for submission {submission_hash}, version {version}",
         outcome="success",
-        additional_data={"consensus_score": evaluation_result["consensus_score"]},
+        additional_data={"consensus_score": evaluation_result["consensus_score"], "version": version},
         tenant_id=request.tenant_id,
         event_id=request.event_id,
         workspace_id=request.workspace_id
     )
-    
+
+    # Create provenance entry for judgment
+    create_entry(
+        db,
+        actor="multi_agent_judging_engine",
+        event="judgment_save",
+        payload={
+            "submission_hash": submission_hash,
+            "version": version,
+            "total_score": evaluation_result["consensus_score"],
+            "team_id": request.team_id,
+            "tenant_id": request.tenant_id,
+            "event_id": request.event_id,
+            "workspace_id": request.workspace_id
+        },
+        event_id=request.event_id,
+        outcome="success"
+    )
+
     # Return the structured response with both submission and judging results
     return APIResponse(
         success=True,
@@ -124,14 +209,16 @@ async def submit_and_score(request: JudgeRequest):
         data={
             "submission": {
                 "text": request.submission_text,
-                "team_id": request.team_id
+                "team_id": request.team_id,
+                "submission_hash": submission_hash
             },
             "judging_result": {
                 "individual_scores": evaluation_result["individual_scores"],
                 "consensus_score": evaluation_result["consensus_score"],
                 "criteria_scores": consensus_scores,
                 "reasoning_chain": evaluation_result["reasoning_chain"],
-                "confidence": 0.9  # Placeholder - would be from actual result
+                "confidence": 0.9,  # Placeholder - would be from actual result
+                "version": version
             }
         }
     )

@@ -118,6 +118,15 @@ def _create_indexes(database):
         
         # Index for assignments
         database.assignments.create_index([("project_id", 1)], unique=True)
+
+        # Index for submissions
+        database.submissions.create_index([("submission_hash", 1)], unique=True)
+        database.submissions.create_index([("team_id", 1)])
+
+        # Index for judgments
+        database.judgments.create_index([("submission_hash", 1)])
+        database.judgments.create_index([("team_id", 1)])
+        database.judgments.create_index([("version", 1)])
         
         logger.info("✅ Database indexes created successfully")
     except Exception as e:

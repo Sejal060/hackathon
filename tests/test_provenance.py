@@ -95,3 +95,62 @@ def mock_open(read_data=""):
     mock_file.__exit__ = lambda x, y, z, w: None
     mock_file.read.return_value = read_data
     return MagicMock(return_value=mock_file)
+
+@patch('src.security.compute_entry_hash')
+def test_provenance_required_fields(mock_compute_hash):
+    """Test that provenance entries contain all required fields"""
+    mock_compute_hash.return_value = "a1b2c3d4e5f67890" * 4
+
+    mock_db = MagicMock()
+    mock_db.provenance_logs.find_one.return_value = None
+
+    entry = create_entry(
+        mock_db,
+        actor="test_actor",
+        event="test_event",
+        payload={"key": "value"},
+        event_id="test_event_id",
+        outcome="success"
+    )
+
+    # Verify required fields are present
+    assert "event_id" in entry
+    assert "actor" in entry
+    assert "outcome" in entry
+    assert "timestamp" in entry
+    assert "payload_hash" in entry
+    assert entry["event_id"] == "test_event_id"
+    assert entry["actor"] == "test_actor"
+    assert entry["outcome"] == "success"
+
+@patch('src.security.compute_entry_hash')
+def test_provenance_defaults(mock_compute_hash):
+    """Test that provenance entries have correct defaults"""
+    mock_compute_hash.return_value = "a1b2c3d4e5f67890" * 4
+
+    mock_db = MagicMock()
+    mock_db.provenance_logs.find_one.return_value = None
+
+    entry = create_entry(
+        mock_db,
+        actor=None,
+        event="test_event",
+        payload={"key": "value"}
+    )
+
+    # Verify defaults
+    assert entry["actor"] == "system"
+    assert entry["outcome"] == "unknown"
+    assert entry["event_id"] == f"test_event_{entry['timestamp']}"
+
+def test_hash_deterministic():
+    """Test that hash computation is deterministic"""
+    payload = {"key": "value", "number": 42}
+    hash1 = compute_payload_hash(payload)
+    hash2 = compute_payload_hash(payload)
+    assert hash1 == hash2
+
+    # Different payload different hash
+    payload2 = {"key": "different"}
+    hash3 = compute_payload_hash(payload2)
+    assert hash1 != hash3

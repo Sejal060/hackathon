@@ -60,6 +60,8 @@ class JudgeRequest(BaseModel):
     tenant_id: Optional[str] = None
     event_id: Optional[str] = None
     workspace_id: Optional[str] = None
+    # Internal storage fields
+    submission_hash: Optional[str] = None
 
 class JudgeResponse(BaseModel):
     clarity: int
@@ -69,5 +71,7 @@ class JudgeResponse(BaseModel):
     confidence: float
     trace: str
     team_id: Optional[str] = None
+    # Internal storage fields
+    version: Optional[int] = None
 
 # Add more as needed
