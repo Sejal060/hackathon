@@ -9,7 +9,7 @@ import json
 
 # Import provenance module
 try:
-    from .security.provenance import create_entry
+    from .security import create_entry
     from .database import get_db
     PROVENANCE_AVAILABLE = True
 except ImportError:
