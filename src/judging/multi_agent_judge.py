@@ -128,19 +128,21 @@ class MultiAgentJudge:
                 "confidence": 0.6
             }
 
-    def evaluate_submission(self, submission_text: str, team_id: str = None) -> Dict[str, Any]:
+    def evaluate_submission(self, submission_text: str, team_id: str = None, tenant_id: str = None, event_id: str = None) -> Dict[str, Any]:
         """
         Evaluate a submission using all three specialized judge agents.
-        
+
         Args:
             submission_text: The submission text to evaluate
             team_id: Optional team ID for logging
-            
+            tenant_id: Optional tenant ID for context
+            event_id: Optional event ID for context
+
         Returns:
             Dictionary with individual scores, consensus score, and reasoning
         """
         logger.info(f"Multi-agent evaluation started for team {team_id}")
-        
+
         # Collect evaluations from all judges
         individual_evaluations = {}
         for judge_id in self.judges.keys():
@@ -149,18 +151,20 @@ class MultiAgentJudge:
                 "judge_info": self.judges[judge_id],
                 "evaluation": evaluation
             }
-        
+
         # Calculate consensus scores
         consensus_scores = self._calculate_consensus_scores(individual_evaluations)
-        
+
         # Create result
         result = {
             "team_id": team_id,
+            "tenant_id": tenant_id,
+            "event_id": event_id,
             "individual_scores": individual_evaluations,
             "consensus_scores": consensus_scores,
             "timestamp": __import__('datetime').datetime.now().isoformat()
         }
-        
+
         logger.info(f"Multi-agent evaluation completed for team {team_id}")
         return result
 
@@ -213,37 +217,107 @@ class MultiAgentJudge:
 def evaluate_submission_multi_agent(payload: dict) -> dict:
     """
     Public function to evaluate a submission using multi-agent system.
-    
+
     Args:
         payload: Dictionary containing submission_text and optional team_id
-        
+
     Returns:
         Dictionary with individual scores, consensus score, and reasoning
     """
-    # Initialize the multi-agent judging system
-    multi_agent_judge = MultiAgentJudge()
-    
     # Extract data from payload
     submission_text = payload.get("submission_text", "")
     team_id = payload.get("team_id")
-    
-    # Evaluate the submission
-    result = multi_agent_judge.evaluate_submission(submission_text, team_id)
-    
+    tenant_id = payload.get("tenant_id")
+    event_id = payload.get("event_id")
+
+    # Check if demo mode
+    if os.getenv("JUDGE_MODE", "ai").lower() == "demo":
+        logger.warning(f"Demo mode enabled - using fallback judging for team {team_id}, tenant {tenant_id}, event {event_id}")
+        result = create_fallback_judging_result(submission_text, team_id, tenant_id, event_id)
+    else:
+        try:
+            # Initialize the multi-agent judging system
+            multi_agent_judge = MultiAgentJudge()
+
+            # Evaluate the submission
+            result = multi_agent_judge.evaluate_submission(submission_text, team_id, tenant_id, event_id)
+
+        except Exception as e:
+            logger.warning(f"AI judging failed for team {team_id}, tenant {tenant_id}, event {event_id}: {str(e)} - using fallback")
+            result = create_fallback_judging_result(submission_text, team_id, tenant_id, event_id)
+
     # Format the response as requested
-    return {
+    response = {
         "individual_scores": {
             judge_id: {
-                "judge_name": eval_data["judge_info"]["name"],
-                "specialty": eval_data["judge_info"]["specialty"],
-                "scores": eval_data["evaluation"]["scores"],
-                "explanation": eval_data["evaluation"]["explanation"],
-                "confidence": eval_data["evaluation"]["confidence"]
+                "judge_name": eval_data["judge_info"]["name"] if "judge_info" in eval_data else eval_data["judge_name"],
+                "specialty": eval_data["judge_info"]["specialty"] if "judge_info" in eval_data else eval_data["specialty"],
+                "scores": eval_data["evaluation"]["scores"] if "evaluation" in eval_data else eval_data["scores"],
+                "explanation": eval_data["evaluation"]["explanation"] if "evaluation" in eval_data else eval_data["explanation"],
+                "confidence": eval_data["evaluation"]["confidence"] if "evaluation" in eval_data else eval_data["confidence"]
             }
             for judge_id, eval_data in result["individual_scores"].items()
         },
-        "consensus_score": result["consensus_scores"]["overall_score"],
-        "criteria_scores": result["consensus_scores"]["criteria"],
-        "reasoning_chain": result["consensus_scores"]["reasoning_chain"],
+        "consensus_score": result["consensus_scores"]["overall_score"] if "consensus_scores" in result else result["consensus_score"],
+        "criteria_scores": result["consensus_scores"]["criteria"] if "consensus_scores" in result else result["criteria_scores"],
+        "reasoning_chain": result["consensus_scores"]["reasoning_chain"] if "consensus_scores" in result else result["reasoning_chain"],
         "timestamp": result["timestamp"]
+    }
+
+    # Add fallback flag if present
+    if result.get("fallback"):
+        response["fallback"] = True
+        response["confidence"] = result.get("confidence", 0.25)
+
+    return response
+
+
+def create_fallback_judging_result(submission_text: str, team_id: str = None, tenant_id: str = None, event_id: str = None) -> dict:
+    """
+    Create a deterministic fallback judging result when AI is unavailable.
+
+    Returns a result matching the expected schema with fixed realistic scores.
+    """
+    import hashlib
+    import time
+
+    # Create deterministic scores based on submission hash
+    submission_hash = hashlib.md5(submission_text.encode()).hexdigest()
+    hash_int = int(submission_hash[:8], 16)
+
+    # Generate consistent but varied scores
+    base_scores = {
+        "clarity": 6 + (hash_int % 3),  # 6-8
+        "tech_depth": 5 + (hash_int % 4),  # 5-8
+        "innovation": 4 + (hash_int % 5),  # 4-8
+    }
+
+    total_score = sum(base_scores.values()) / len(base_scores)
+
+    # Create individual judge results (simulated)
+    individual_scores = {}
+    judge_names = ["Technical Depth Judge", "Product & Impact Judge", "Clarity & UX Judge"]
+    specialties = ["tech_depth", "impact", "clarity"]
+
+    for i, (judge_id, specialty) in enumerate(zip(["judge_a", "judge_b", "judge_c"], specialties)):
+        score_value = base_scores.get(specialty, 6)
+        individual_scores[judge_id] = {
+            "judge_name": judge_names[i],
+            "specialty": specialty,
+            "scores": {specialty: score_value},
+            "explanation": f"Fallback scoring: {score_value}/10 for {specialty}",
+            "confidence": 0.3
+        }
+
+    return {
+        "individual_scores": individual_scores,
+        "consensus_score": round(total_score, 2),
+        "criteria_scores": base_scores,
+        "reasoning_chain": "Fallback demo scoring used - AI judging unavailable",
+        "timestamp": time.time(),
+        "fallback": True,
+        "confidence": 0.25,
+        "team_id": team_id,
+        "tenant_id": tenant_id,
+        "event_id": event_id
     }

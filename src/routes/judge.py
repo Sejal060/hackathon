@@ -46,7 +46,9 @@ async def score_submission(request: JudgeRequest):
     # Evaluate the submission using multi-agent system
     evaluation_result = evaluate_submission_multi_agent({
         "submission_text": request.submission_text,
-        "team_id": request.team_id
+        "team_id": request.team_id,
+        "tenant_id": request.tenant_id,
+        "event_id": request.event_id
     })
     
     # Extract consensus scores for the response
@@ -70,9 +72,10 @@ async def score_submission(request: JudgeRequest):
         quality=consensus_scores.get("tech_depth", 0),  # tech_depth maps to quality
         innovation=consensus_scores.get("innovation", 0),
         total_score=evaluation_result["consensus_score"],
-        confidence=0.9,  # Placeholder - would be from actual result
+        confidence=evaluation_result.get("confidence", 0.9),
         trace=evaluation_result["reasoning_chain"],
-        team_id=request.team_id
+        team_id=request.team_id,
+        fallback=evaluation_result.get("fallback")
     )
 
 @router.post("/submit", response_model=Dict[str, Any], summary="Saves and scores a submission", dependencies=[Depends(get_api_key)])
@@ -140,7 +143,9 @@ async def submit_and_score(request: JudgeRequest):
     # Evaluate the submission using multi-agent system
     evaluation_result = evaluate_submission_multi_agent({
         "submission_text": request.submission_text,
-        "team_id": request.team_id
+        "team_id": request.team_id,
+        "tenant_id": request.tenant_id,
+        "event_id": request.event_id
     })
 
     # Extract consensus scores for the response
@@ -161,7 +166,7 @@ async def submit_and_score(request: JudgeRequest):
         "quality": consensus_scores.get("tech_depth", 0),
         "innovation": consensus_scores.get("innovation", 0),
         "total_score": evaluation_result["consensus_score"],
-        "confidence": 0.9,
+        "confidence": evaluation_result.get("confidence", 0.9),
         "trace": evaluation_result["reasoning_chain"],
         "version": version,
         "tenant_id": request.tenant_id,
@@ -169,6 +174,8 @@ async def submit_and_score(request: JudgeRequest):
         "workspace_id": request.workspace_id,
         "timestamp": int(time.time())
     }
+    if evaluation_result.get("fallback"):
+        judgment_doc["fallback"] = True
     db.judgments.insert_one(judgment_doc)
     logger.info(f"Judgment saved for submission {submission_hash}, version {version}")
 
@@ -217,8 +224,9 @@ async def submit_and_score(request: JudgeRequest):
                 "consensus_score": evaluation_result["consensus_score"],
                 "criteria_scores": consensus_scores,
                 "reasoning_chain": evaluation_result["reasoning_chain"],
-                "confidence": 0.9,  # Placeholder - would be from actual result
-                "version": version
+                "confidence": evaluation_result.get("confidence", 0.9),
+                "version": version,
+                **({"fallback": True} if evaluation_result.get("fallback") else {})
             }
         }
     )

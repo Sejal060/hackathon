@@ -8,7 +8,7 @@ from src.integrations.bhiv_connectors import send_to_core, save_to_bucket
 logger = logging.getLogger(__name__)
 
 class RewardSystem:
-    def calculate_reward(self, action: str, outcome: Optional[str] = None) -> Tuple[float, str]:
+    def calculate_reward(self, action: str, outcome: Optional[str] = None, tenant_id: Optional[str] = None, event_id: Optional[str] = None) -> Tuple[float, str]:
         """
         Calculate reward for an action and optional outcome.
         Returns a tuple of (reward: float, feedback: str).
@@ -49,7 +49,9 @@ class RewardSystem:
             "reward": reward,
             "feedback": feedback,
             "timestamp": time.time(),
-            "steps_count": len(steps)
+            "steps_count": len(steps),
+            "tenant_id": tenant_id,
+            "event_id": event_id
         }
         
         # Send to BHIV Core and save to BHIV Bucket

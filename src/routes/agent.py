@@ -25,13 +25,13 @@ async def agent_endpoint(request: AgentRequest):
     """
     try:
         # Log the agent request using KSML
-        ksml_logger.log_agent_request(request.team_id, request.prompt, request.metadata)
+        ksml_logger.log_agent_request(request.team_id, request.prompt, request.metadata, tenant_id=request.tenant_id, event_id=request.event_id)
 
         result = route_mcp(request.dict())
 
         # Calculate reward using the reward system
         reward_system = RewardSystem()
-        reward_value, feedback = reward_system.calculate_reward(result.get("action", ""), "success")
+        reward_value, feedback = reward_system.calculate_reward(result.get("action", ""), "success", tenant_id=request.tenant_id, event_id=request.event_id)
 
         # Evaluate the result with the judging engine
         try:
@@ -42,6 +42,8 @@ async def agent_endpoint(request: AgentRequest):
                 "team_id": request.team_id,
                 "submission_text": result.get("result", ""),
                 "judge_result": judge_result,
+                "tenant_id": request.tenant_id,
+                "event_id": request.event_id,
                 "timestamp": datetime.now().isoformat()
             }
             relay_to_bucket(judge_data)
@@ -63,7 +65,7 @@ async def agent_endpoint(request: AgentRequest):
             )
 
         # Log the agent response
-        ksml_logger.log_agent_response(request.team_id, result)
+        ksml_logger.log_agent_response(request.team_id, result, tenant_id=request.tenant_id, event_id=request.event_id)
 
         # Return the response with the calculated reward
         return AgentResponse(

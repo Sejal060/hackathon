@@ -137,7 +137,11 @@ def get_db():
     Returns the global db object. Use this inside your routes/services.
     """
     if not DB_AVAILABLE:
-        raise HTTPException(status_code=503, detail=f"Database unavailable in degraded mode. Error type: {DB_ERROR_TYPE}")
+        if ENV == "production":
+            raise HTTPException(status_code=503, detail=f"Database unavailable in degraded mode. Error type: {DB_ERROR_TYPE}")
+        else:
+            # In development, return None to allow degraded operation
+            return None
     if db is None:
         raise RuntimeError("Database is not initialized. Did you call connect_to_db() on startup?")
     return db

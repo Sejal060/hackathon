@@ -101,25 +101,29 @@ class KSMLLogger:
         return relay_to_bucket(log_entry)
     
     @staticmethod
-    def log_agent_request(team_id: str, prompt: str, metadata: Dict[str, Any]) -> str:
+    def log_agent_request(team_id: str, prompt: str, metadata: Dict[str, Any], tenant_id: Optional[str] = None, event_id: Optional[str] = None) -> str:
         """Log an agent request."""
         return KSMLLogger.log_event(
             intent="agent_request",
             actor=f"team_{team_id}",
             context=f"Team {team_id} requested: {prompt}",
             outcome="received",
-            additional_data={"metadata": metadata}
+            additional_data={"metadata": metadata},
+            tenant_id=tenant_id,
+            event_id=event_id
         )
     
     @staticmethod
-    def log_agent_response(team_id: str, response: Dict[str, Any]) -> str:
+    def log_agent_response(team_id: str, response: Dict[str, Any], tenant_id: Optional[str] = None, event_id: Optional[str] = None) -> str:
         """Log an agent response."""
         return KSMLLogger.log_event(
             intent="agent_response",
             actor="system",
             context=f"Response generated for team {team_id}",
             outcome="success",
-            additional_data={"response_length": len(str(response))}
+            additional_data={"response_length": len(str(response))},
+            tenant_id=tenant_id,
+            event_id=event_id
         )
     
     @staticmethod
@@ -137,24 +141,28 @@ class KSMLLogger:
         )
     
     @staticmethod
-    def log_reward_calculation(request_id: str, outcome: str, reward_value: float) -> str:
+    def log_reward_calculation(request_id: str, outcome: str, reward_value: float, tenant_id: Optional[str] = None, event_id: Optional[str] = None) -> str:
         """Log reward calculation."""
         return KSMLLogger.log_event(
             intent="reward_calculation",
             actor="reward_system",
             context=f"Calculated reward for request {request_id} with outcome: {outcome}",
             outcome="completed",
-            additional_data={"reward_value": reward_value}
+            additional_data={"reward_value": reward_value},
+            tenant_id=tenant_id,
+            event_id=event_id
         )
     
     @staticmethod
-    def log_registration(team_name: str, project_title: str) -> str:
+    def log_registration(team_name: str, project_title: str, tenant_id: Optional[str] = None, event_id: Optional[str] = None) -> str:
         """Log team registration."""
         return KSMLLogger.log_event(
             intent="registration",
             actor="registration_system",
             context=f"Team {team_name} registered with project: {project_title}",
-            outcome="success"
+            outcome="success",
+            tenant_id=tenant_id,
+            event_id=event_id
         )
     
     @staticmethod

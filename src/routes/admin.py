@@ -21,10 +21,10 @@ async def reward_endpoint(request: RewardRequest):
     try:
         # Apply reward logic
         reward_system = RewardSystem()
-        reward_value, feedback = reward_system.calculate_reward(f"Request {request.request_id}", request.outcome)
+        reward_value, feedback = reward_system.calculate_reward(f"Request {request.request_id}", request.outcome, tenant_id=request.tenant_id, event_id=request.event_id)
 
         # Log the reward calculation using KSML
-        ksml_logger.log_reward_calculation(request.request_id, request.outcome, reward_value)
+        ksml_logger.log_reward_calculation(request.request_id, request.outcome, reward_value, tenant_id=request.tenant_id, event_id=request.event_id)
 
         return RewardResponse(reward_value=reward_value, feedback=feedback)
     except Exception as e:
@@ -68,7 +68,7 @@ async def register_endpoint(team: TeamRegistration):
     """
     try:
         # Log the registration using KSML
-        ksml_logger.log_registration(team.team_name, team.project_title)
+        ksml_logger.log_registration(team.team_name, team.project_title, tenant_id=team.tenant_id, event_id=team.event_id)
 
         return APIResponse(
             success=True,
@@ -99,6 +99,8 @@ async def webhook_registration(payload: TeamRegistration):
         "team_name": payload.team_name,
         "members": payload.members,
         "project_title": payload.project_title,
+        "tenant_id": payload.tenant_id,
+        "event_id": payload.event_id,
         "timestamp": datetime.now().isoformat()
     }
     
@@ -111,7 +113,7 @@ async def webhook_registration(payload: TeamRegistration):
         )
     except Exception as e:
         # Fallback to original logic if LangGraph flow fails
-        ksml_logger.log_registration(payload.team_name, payload.project_title)
+        ksml_logger.log_registration(payload.team_name, payload.project_title, tenant_id=payload.tenant_id, event_id=payload.event_id)
         return APIResponse(
             success=True,
             message="Team registered via fallback",

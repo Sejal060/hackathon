@@ -40,6 +40,7 @@ class Config:
     # Judging Configuration
     JUDGING_CRITERIA = os.getenv("JUDGING_CRITERIA", "usefulness,creativity,teamwork,tech_stack,clarity").split(",")
     MAX_SCORE_PER_CRITERIA = int(os.getenv("MAX_SCORE_PER_CRITERIA", "10"))
+    JUDGE_MODE = os.getenv("JUDGE_MODE", "ai")  # "ai" or "demo"
     
     # Event Configuration
     EVENT_DATE = os.getenv("EVENT_DATE", "2024-08-15")

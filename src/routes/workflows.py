@@ -30,8 +30,8 @@ class TeamRegistrationRequest(BaseModel):
     team_name: str
     members: List[str]
     project_title: str
-    tenant_id: Optional[str] = None
-    event_id: Optional[str] = None
+    tenant_id: str = "default"
+    event_id: str = "default_event"
     workspace_id: Optional[str] = None
 
 class MentorBotRequest(BaseModel):
