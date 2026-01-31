@@ -163,8 +163,11 @@ app.include_router(workflows_router)
 app.include_router(langgraph_router)
 app.include_router(mcp_router)
 
-# Register error handler
-from .middleware_handlers.error_handler import api_exception_handler
+# Register error handlers
+from .middleware_handlers.error_handler import api_exception_handler, validation_exception_handler
+from fastapi.exceptions import RequestValidationError
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, api_exception_handler)
 
 # Root endpoint

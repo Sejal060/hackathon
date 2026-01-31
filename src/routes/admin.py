@@ -1,23 +1,44 @@
 # src/routes/admin.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from ..models import RewardRequest, RewardResponse, LogRequest, TeamRegistration
 from ..bucket_connector import relay_to_bucket
 from ..reward import RewardSystem
+from ..replay_protection import check_replay
 from datetime import datetime
 from ..logger import ksml_logger
 from ..auth import get_api_key
 from ..schemas.response import APIResponse
+import logging
 
 router = APIRouter(prefix="", tags=["admin"])
+logger = logging.getLogger(__name__)
 
 @router.post("/reward", response_model=RewardResponse, summary="Apply reward to a request", dependencies=[Depends(get_api_key)])
 async def reward_endpoint(request: RewardRequest):
     """
     Calculate and apply rewards based on request outcome.
     
-    - **request_id**: ID of the request to apply reward to
+    - **request_id**: ID of the request to apply reward to (used for replay protection)
     - **outcome**: Outcome of the request (success, failure, etc.)
     """
+    # Check for replay (scoped by tenant_id + event_id)
+    is_new, error_message = check_replay(
+        request_id=request.request_id,
+        tenant_id=request.tenant_id or "default",
+        event_id=request.event_id or "default_event"
+    )
+    
+    if not is_new:
+        logger.warning(f"Replay detected for reward request_id '{request.request_id}' (tenant: {request.tenant_id}, event: {request.event_id})")
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "success": False,
+                "message": error_message,
+                "data": {"request_id": request.request_id}
+            }
+        )
+    
     try:
         # Apply reward logic
         reward_system = RewardSystem()
@@ -28,7 +49,7 @@ async def reward_endpoint(request: RewardRequest):
 
         return RewardResponse(reward_value=reward_value, feedback=feedback)
     except Exception as e:
-        from fastapi import HTTPException
+        logger.error(f"Error calculating reward: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @router.post("/logs", summary="Relay logs to bucket", dependencies=[Depends(get_api_key)])
