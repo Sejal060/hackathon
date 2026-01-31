@@ -20,6 +20,10 @@ from src.reward import RewardSystem
 # Import database module
 from .database import connect_to_db_with_retry, close_db
 
+# Configure logging FIRST (before any logger usage)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
 # Load environment variables
 load_dotenv()
 
@@ -38,10 +42,6 @@ else:
         logger.warning("MONGODB_URI not set, will start in degraded mode")
     if not BUCKET_DB_NAME:
         logger.warning("BUCKET_DB_NAME not set, using default")
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
 
 # In-memory log store (temporary; to be replaced by Nipun's Firebase storage layer)
 class LogEntry(BaseModel):
