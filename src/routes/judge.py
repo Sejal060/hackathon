@@ -443,13 +443,11 @@ async def submit_and_score(request: JudgeRequest):
     else:
         safe_reasoning = raw_reasoning
 
-    # Build the complete response including orchestration results
+    # Build a clean response with ONLY the judging_result
+    # Orchestration data is kept internal (logged only, not returned)
     response_data = {
-        "submission": {
-            "text": request.submission_text,
-            "team_id": request.team_id,
-            "submission_hash": submission_hash
-        },
+        "submission_hash": submission_hash,
+        "team_id": request.team_id,
         "judging_result": {
             "individual_scores": evaluation_result.get("individual_scores", {}),
             "consensus_score": evaluation_result.get("consensus_score", 0),
@@ -458,30 +456,20 @@ async def submit_and_score(request: JudgeRequest):
             "confidence": response_confidence,
             "version": version,
             **({"fallback": True} if evaluation_result.get("fallback") else {})
-        },
-        "orchestration": {
-            "flow_completed": judging_flow.get("success", False) and logging_flow.get("success", False),
-            "judging": {
-                "success": judging_flow.get("success", False),
-                "score": evaluation_result.get("consensus_score", 0)
-            },
-            "reward": {
-                "success": reward_flow.get("success", False),
-                "value": reward_flow.get("data", {}).get("reward_value") if reward_flow.get("success") else None,
-                "outcome": reward_flow.get("data", {}).get("outcome") if reward_flow.get("success") else None
-            },
-            "logging": {
-                "success": logging_flow.get("success", False)
-            }
         }
     }
     
-    # Return the structured response with both submission and judging results
-    # Guaranteed to include confidence and reasoning fields
-    # Also includes orchestration metadata showing internal flow execution
+    # Log orchestration results internally (not returned in response)
+    logger.info(
+        f"[Orchestration] Flow completed: judging={judging_flow.get('success')}, "
+        f"reward={reward_flow.get('success')}, logging={logging_flow.get('success')}"
+    )
+    
+    # Return clean response with only judging_result
+    # This prevents 500 errors from oversized responses
     return APIResponse(
         success=True,
-        message="Submission processed through complete orchestrated flow",
+        message="Submission judged successfully",
         data=response_data
     )
 
