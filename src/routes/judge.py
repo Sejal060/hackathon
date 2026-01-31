@@ -467,11 +467,12 @@ async def submit_and_score(request: JudgeRequest):
     
     # Return clean response with only judging_result
     # This prevents 500 errors from oversized responses
+    # Convert APIResponse to dict for proper JSON serialization
     return APIResponse(
         success=True,
         message="Submission judged successfully",
         data=response_data
-    )
+    ).dict()  # Use .dict() for Pydantic v1 compatibility
 
 @router.get("/rubric", response_model=Dict[str, Any], summary="Returns judging criteria", dependencies=[Depends(get_api_key)])
 async def get_rubric():
@@ -494,7 +495,7 @@ async def get_rubric():
         success=True,
         message="Multi-agent judging criteria retrieved successfully",
         data=rubric_data
-    )
+    ).dict()  # Use .dict() for Pydantic v1 compatibility
 
 
 @router.post("/batch", response_model=Dict[str, Any], summary="Judge multiple submissions in batch", dependencies=[Depends(get_api_key)])
@@ -570,7 +571,7 @@ async def batch_judge(request: BatchJudgeRequest):
             "tenant_id": request.tenant_id,
             "event_id": request.event_id
         }
-    )
+    ).dict()  # Use .dict() for Pydantic v1 compatibility
 
 
 @router.get("/rank", response_model=Dict[str, Any], summary="Get ranked leaderboard", dependencies=[Depends(get_api_key)])
@@ -625,4 +626,4 @@ async def get_rankings(
             "tenant_id": tenant_id,
             "event_id": event_id
         }
-    )
+    ).dict()  # Use .dict() for Pydantic v1 compatibility
