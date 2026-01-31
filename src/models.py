@@ -1,6 +1,12 @@
 # src/models.py
 from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Optional, Any
+from datetime import datetime
+
+
+def get_current_timestamp():
+    """Helper function to get current timestamp as string."""
+    return datetime.now().isoformat()
 
 
 class TeamRegistration(BaseModel):
@@ -49,7 +55,10 @@ class RewardRequest(BaseModel):
 
 class LogRequest(BaseModel):
     """Request model for log relay."""
-    timestamp: str = Field(..., min_length=1, description="Timestamp of the log entry (required, ISO format recommended)")
+    timestamp: str = Field(
+        default_factory=get_current_timestamp,
+        description="Timestamp of the log entry (ISO format, auto-generated if not provided)"
+    )
     level: str = Field(..., min_length=1, description="Log level: INFO, ERROR, WARNING, DEBUG (required)")
     message: str = Field(..., min_length=1, description="Log message (required)")
     additional_data: Optional[Dict[str, Any]] = Field(default=None, description="Optional additional data")
@@ -64,6 +73,13 @@ class LogRequest(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"Level must be one of: {', '.join(sorted(allowed))}")
         return v.upper()
+    
+    @validator("timestamp")
+    def validate_timestamp(cls, v):
+        """Ensure timestamp is valid, auto-generate if empty."""
+        if not v or not str(v).strip():
+            return get_current_timestamp()
+        return v
 
 
 class AgentResponse(BaseModel):
