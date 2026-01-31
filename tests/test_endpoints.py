@@ -47,11 +47,12 @@ class TestEndpoints(unittest.TestCase):
         self.assertIn("reward", data)
     
     def test_agent_get_endpoint_empty_input(self):
-        """Test the POST /agent endpoint with empty prompt"""
+        """Test the POST /agent endpoint with empty prompt returns 422 validation error"""
         payload = {"team_id": "demo_team", "prompt": ""}
         headers = {"X-API-Key": "default_key"}
         response = client.post("/agent/", json=payload, headers=headers)
-        self.assertEqual(response.status_code, 200)
+        # Empty prompt should now return 422 due to validation
+        self.assertEqual(response.status_code, 422)
     
     def test_agent_post_endpoint(self):
         """Test the POST /agent endpoint"""
